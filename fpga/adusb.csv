@@ -14,11 +14,15 @@
 
 # Quartus II 64-Bit Version 10.1 Build 153 11/29/2010 SJ Full Version
 # File: C:/Users/danleaf/Desktop/voice/adusb.csv
-# Generated on: Mon Jul 20 23:30:13 2015
+# Generated on: Thu Jul 23 15:13:25 2015
 
 # Note: The column header names should not be changed if you wish to import this .csv file into the Quartus II software.
 
 To,Direction,Location,I/O Bank,VREF Group,I/O Standard,Reserved,Current Strength
+altera_reserved_tck,Input,,,,,,
+altera_reserved_tdi,Input,,,,,,
+altera_reserved_tdo,Output,,,,,,
+altera_reserved_tms,Input,,,,,,
 i_ad_data[7],Input,PIN_H22,6,B6_N3,,,
 i_ad_data[6],Input,PIN_H21,6,B6_N2,,,
 i_ad_data[5],Input,PIN_G18,6,B6_N1,,,
@@ -30,6 +34,7 @@ i_ad_data[0],Input,PIN_F19,6,B6_N1,,,
 i_clk40M,Input,PIN_G22,6,B6_N3,,,
 i_clk50M,Input,PIN_G1,1,B1_N3,,,
 i_rst_n,Input,PIN_E4,1,B1_N0,,,
+i_trig,Input,PIN_Y3,3,B3_N3,,,
 i_usb_flagb,Input,PIN_B19,7,B7_N1,3.0-V LVTTL,,Maximum Current
 o_clk_ad,Output,PIN_J17,6,B6_N1,,,
 o_clk_da,Output,PIN_J18,6,B6_N2,,,
@@ -67,5 +72,6 @@ o_usb_data[0],Output,PIN_A18,7,B7_N1,3.0-V LVTTL,,Maximum Current
 o_usb_ifclk,Output,PIN_B20,7,B7_N1,3.0-V LVTTL,,Maximum Current
 o_usb_slcs,Output,PIN_F11,7,B7_N3,3.0-V LVTTL,,Maximum Current
 o_usb_sloe,Output,PIN_E13,7,B7_N3,3.0-V LVTTL,,Maximum Current
+o_usb_slpked,Output,PIN_E11,7,B7_N3,3.0-V LVTTL,,
 o_usb_slrd,Output,PIN_W6,3,B3_N2,3.0-V LVTTL,,Maximum Current
 o_usb_slwr,Output,PIN_V6,3,B3_N3,3.0-V LVTTL,,Maximum Current
