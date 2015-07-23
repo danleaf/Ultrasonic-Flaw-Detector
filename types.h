@@ -12,10 +12,28 @@ typedef unsigned __int32    U32;
 typedef unsigned __int64    U64;
 
 typedef INT32 RETCODE;
+typedef void*   POINTER;
 
-typedef struct __Buffer {
-    U8*     address;
-    U32   length;
-}BUFFER, *PBUFFER;
+typedef struct udfBuffer 
+{
+    struct udfBuffer* next;
+
+    unsigned char*     address;
+    int     waveSize;
+    int     waveCount;
+
+    volatile long reading;
+
+    void InterlockedSetReading()
+    {
+        InterlockedCompareExchange(&reading, TRUE, FALSE);
+    }
+
+    void InterlockedUnSetReading()
+    {
+        InterlockedCompareExchange(&reading, FALSE, TRUE);
+    }
+}
+UDF_BUFFER, *PUDF_BUFFER;
 
 #endif
