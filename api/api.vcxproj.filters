@@ -29,9 +29,6 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="dllmain.c">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="stdafx.c">
       <Filter>源文件</Filter>
     </ClCompile>
