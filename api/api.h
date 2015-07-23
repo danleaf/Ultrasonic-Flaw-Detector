@@ -11,5 +11,5 @@
 #endif
 
 
-API_API HANDLE IPScanGetDeviceBySystemID(UINT32 systemId, UINT32 deviceId);
-
+API_API HANDLE IPScanGetDeviceBySystemID(U32 systemId, U32 deviceId);
+API_API RETCODE IPScanSendData(U32 deviceId, PBUFFER buffer);
