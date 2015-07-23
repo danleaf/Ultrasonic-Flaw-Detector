@@ -1,0 +1,56 @@
+# Copyright (C) 1991-2010 Altera Corporation
+# Your use of Altera Corporation's design tools, logic functions 
+# and other software and tools, and its AMPP partner logic 
+# functions, and any output files from any of the foregoing 
+# (including device programming or simulation files), and any 
+# associated documentation or information are expressly subject 
+# to the terms and conditions of the Altera Program License 
+# Subscription Agreement, Altera MegaCore Function License 
+# Agreement, or other applicable license agreement, including, 
+# without limitation, that your use is for the sole purpose of 
+# programming logic devices manufactured by Altera and sold by 
+# Altera or its authorized distributors.  Please refer to the 
+# applicable agreement for further details.
+
+# Quartus II Version 10.1 Build 153 11/29/2010 SJ Full Version
+# File: E:/Projects/voice/pins.csv
+# Generated on: Sun Mar 15 19:18:20 2015
+
+# Note: The column header names should not be changed if you wish to import this .csv file into the Quartus II software.
+
+To,Direction,Location,I/O Bank,VREF Group,I/O Standard,Reserved
+i_clk_sys50m,Input,PIN_23,1,B1_N0,,
+i_red,Input,PIN_189,2,B2_N1,,
+o_num[6],Output,PIN_170,2,B2_N0,,
+o_num[5],Output,PIN_169,2,B2_N0,,
+o_num[4],Output,PIN_168,2,B2_N0,,
+o_num[3],Output,PIN_165,2,B2_N0,,
+o_num[2],Output,PIN_164,2,B2_N0,,
+o_num[1],Output,PIN_163,2,B2_N0,,
+o_num[0],Output,PIN_162,2,B2_N0,,
+o_sel[7],Output,PIN_180,2,B2_N0,,
+o_sel[6],Output,PIN_181,2,B2_N0,,
+o_sel[5],Output,PIN_182,2,B2_N0,,
+o_sel[4],Output,PIN_185,2,B2_N1,,
+o_sel[3],Output,PIN_173,2,B2_N0,,
+o_sel[2],Output,PIN_175,2,B2_N0,,
+o_sel[1],Output,PIN_176,2,B2_N0,,
+o_sel[0],Output,PIN_179,2,B2_N0,,
+i_ad_data[7],Input,PIN_37,1,B1_N1,,
+i_ad_data[6],Input,PIN_39,1,B1_N1,,
+i_ad_data[5],Input,PIN_40,1,B1_N1,,
+i_ad_data[4],Input,PIN_41,1,B1_N1,,
+i_ad_data[3],Input,PIN_43,1,B1_N1,,
+i_ad_data[2],Input,PIN_44,1,B1_N1,,
+i_ad_data[1],Input,PIN_45,1,B1_N1,,
+i_ad_data[0],Input,PIN_46,1,B1_N1,,
+o_clk_ad25m,Output,PIN_47,1,B1_N1,,
+o_clk_da,Output,PIN_64,4,B4_N1,,
+o_da_data[7],Output,PIN_63,4,B4_N1,,
+o_da_data[6],Output,PIN_61,4,B4_N1,,
+o_da_data[5],Output,PIN_60,4,B4_N1,,
+o_da_data[4],Output,PIN_59,4,B4_N1,,
+o_da_data[3],Output,PIN_58,4,B4_N1,,
+o_da_data[2],Output,PIN_57,4,B4_N1,,
+o_da_data[1],Output,PIN_56,4,B4_N1,,
+o_da_data[0],Output,PIN_48,1,B1_N1,,

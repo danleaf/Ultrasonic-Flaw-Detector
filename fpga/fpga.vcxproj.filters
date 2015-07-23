@@ -1,0 +1,178 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="源文件">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="头文件">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="资源文件">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ad_buff.v">
+      <Filter>源文件</Filter>
+    </None>
+    <None Include="AD_FIFO.v">
+      <Filter>源文件</Filter>
+    </None>
+    <None Include="ad_wrapper.v">
+      <Filter>源文件</Filter>
+    </None>
+    <None Include="ADC.v">
+      <Filter>源文件</Filter>
+    </None>
+    <None Include="add.v">
+      <Filter>源文件</Filter>
+    </None>
+    <None Include="altdualram.v">
+      <Filter>源文件</Filter>
+    </None>
+    <None Include="checksum.v">
+      <Filter>源文件</Filter>
+    </None>
+    <None Include="cntt.v">
+      <Filter>源文件</Filter>
+    </None>
+    <None Include="cntt_bb.v">
+      <Filter>源文件</Filter>
+    </None>
+    <None Include="counter.v">
+      <Filter>源文件</Filter>
+    </None>
+    <None Include="crc.v">
+      <Filter>源文件</Filter>
+    </None>
+    <None Include="DIVCLK.v">
+      <Filter>源文件</Filter>
+    </None>
+    <None Include="dualram.v">
+      <Filter>源文件</Filter>
+    </None>
+    <None Include="eth.v">
+      <Filter>源文件</Filter>
+    </None>
+    <None Include="eth_commu.v">
+      <Filter>源文件</Filter>
+    </None>
+    <None Include="eth_session.v">
+      <Filter>源文件</Filter>
+    </None>
+    <None Include="etharp.v">
+      <Filter>源文件</Filter>
+    </None>
+    <None Include="fifo.v">
+      <Filter>源文件</Filter>
+    </None>
+    <None Include="GrayCounter4Bit.v">
+      <Filter>源文件</Filter>
+    </None>
+    <None Include="inc.v">
+      <Filter>源文件</Filter>
+    </None>
+    <None Include="indififo.v">
+      <Filter>源文件</Filter>
+    </None>
+    <None Include="ip.v">
+      <Filter>源文件</Filter>
+    </None>
+    <None Include="mac.v">
+      <Filter>源文件</Filter>
+    </None>
+    <None Include="NUMSHOW.v">
+      <Filter>源文件</Filter>
+    </None>
+    <None Include="packet.v">
+      <Filter>源文件</Filter>
+    </None>
+    <None Include="pll100m.v">
+      <Filter>源文件</Filter>
+    </None>
+    <None Include="pll125m.v">
+      <Filter>源文件</Filter>
+    </None>
+    <None Include="pll133m.v">
+      <Filter>源文件</Filter>
+    </None>
+    <None Include="pll180m.v">
+      <Filter>源文件</Filter>
+    </None>
+    <None Include="plladusb1.v">
+      <Filter>源文件</Filter>
+    </None>
+    <None Include="plladusb2.v">
+      <Filter>源文件</Filter>
+    </None>
+    <None Include="RED_RECV.v">
+      <Filter>源文件</Filter>
+    </None>
+    <None Include="sdram.v">
+      <Filter>源文件</Filter>
+    </None>
+    <None Include="sdramfifo.v">
+      <Filter>源文件</Filter>
+    </None>
+    <None Include="sindata.v">
+      <Filter>源文件</Filter>
+    </None>
+    <None Include="syncfifo.v">
+      <Filter>源文件</Filter>
+    </None>
+    <None Include="test.v">
+      <Filter>源文件</Filter>
+    </None>
+    <None Include="testip.v">
+      <Filter>源文件</Filter>
+    </None>
+    <None Include="testusb.v">
+      <Filter>源文件</Filter>
+    </None>
+    <None Include="top.v">
+      <Filter>源文件</Filter>
+    </None>
+    <None Include="top0.v">
+      <Filter>源文件</Filter>
+    </None>
+    <None Include="triger.v">
+      <Filter>源文件</Filter>
+    </None>
+    <None Include="udp.v">
+      <Filter>源文件</Filter>
+    </None>
+    <None Include="usb.v">
+      <Filter>源文件</Filter>
+    </None>
+    <None Include="voice.v">
+      <Filter>源文件</Filter>
+    </None>
+    <None Include="wave_fifo.v">
+      <Filter>源文件</Filter>
+    </None>
+    <None Include="adusb.stp">
+      <Filter>资源文件</Filter>
+    </None>
+    <None Include="voice.sdc">
+      <Filter>资源文件</Filter>
+    </None>
+    <None Include="sin.mif">
+      <Filter>资源文件</Filter>
+    </None>
+    <None Include="ufd.csv">
+      <Filter>资源文件</Filter>
+    </None>
+    <None Include="pins2.csv">
+      <Filter>资源文件</Filter>
+    </None>
+    <None Include="pins.csv">
+      <Filter>资源文件</Filter>
+    </None>
+    <None Include="adusb.csv">
+      <Filter>资源文件</Filter>
+    </None>
+  </ItemGroup>
+</Project>

@@ -1,0 +1,77 @@
+# Copyright (C) 1991-2010 Altera Corporation
+# Your use of Altera Corporation's design tools, logic functions 
+# and other software and tools, and its AMPP partner logic 
+# functions, and any output files from any of the foregoing 
+# (including device programming or simulation files), and any 
+# associated documentation or information are expressly subject 
+# to the terms and conditions of the Altera Program License 
+# Subscription Agreement, Altera MegaCore Function License 
+# Agreement, or other applicable license agreement, including, 
+# without limitation, that your use is for the sole purpose of 
+# programming logic devices manufactured by Altera and sold by 
+# Altera or its authorized distributors.  Please refer to the 
+# applicable agreement for further details.
+
+# Quartus II Version 10.1 Build 153 11/29/2010 SJ Full Version
+# File: E:/Projects/voice/pins.csv
+# Generated on: Sun Mar 15 19:18:20 2015
+
+# Note: The column header names should not be changed if you wish to import this .csv file into the Quartus II software.
+
+To,Direction,Location,I/O Bank,VREF Group,I/O Standard,Reserved
+i_clk_sys50m,Input,PIN_23,1,B1_N0,,
+i_red,Input,PIN_189,2,B2_N1,,
+o_num[6],Output,PIN_170,2,B2_N0,,
+o_num[5],Output,PIN_169,2,B2_N0,,
+o_num[4],Output,PIN_168,2,B2_N0,,
+o_num[3],Output,PIN_165,2,B2_N0,,
+o_num[2],Output,PIN_164,2,B2_N0,,
+o_num[1],Output,PIN_163,2,B2_N0,,
+o_num[0],Output,PIN_162,2,B2_N0,,
+o_sel[7],Output,PIN_180,2,B2_N0,,
+o_sel[6],Output,PIN_181,2,B2_N0,,
+o_sel[5],Output,PIN_182,2,B2_N0,,
+o_sel[4],Output,PIN_185,2,B2_N1,,
+o_sel[3],Output,PIN_173,2,B2_N0,,
+o_sel[2],Output,PIN_175,2,B2_N0,,
+o_sel[1],Output,PIN_176,2,B2_N0,,
+o_sel[0],Output,PIN_179,2,B2_N0,,
+o_sdram_clk,Output,PIN_97,,,,
+io_sdram_data[15],Bidir,PIN_127,,,,
+io_sdram_data[14],Bidir,PIN_118,,,,
+io_sdram_data[13],Bidir,PIN_117,,,,
+io_sdram_data[12],Bidir,PIN_116,,,,
+io_sdram_data[11],Bidir,PIN_115,,,,
+io_sdram_data[10],Bidir,PIN_114,,,,
+io_sdram_data[9],Bidir,PIN_113,,,,
+io_sdram_data[8],Bidir,PIN_112,,,,
+io_sdram_data[7],Bidir,PIN_141,,,,
+io_sdram_data[6],Bidir,PIN_139,,,,
+io_sdram_data[5],Bidir,PIN_138,,,,
+io_sdram_data[4],Bidir,PIN_137,,,,
+io_sdram_data[3],Bidir,PIN_135,,,,
+io_sdram_data[2],Bidir,PIN_134,,,,
+io_sdram_data[1],Bidir,PIN_133,,,,
+io_sdram_data[0],Bidir,PIN_128,,,,
+o_sdram_addr[12],Output,PIN_101,,,,
+o_sdram_addr[11],Output,PIN_102,,,,
+o_sdram_addr[10],Output,PIN_149,,,,
+o_sdram_addr[9],Output,PIN_103,,,,
+o_sdram_addr[8],Output,PIN_104,,,,
+o_sdram_addr[7],Output,PIN_105,,,,
+o_sdram_addr[6],Output,PIN_106,,,,
+o_sdram_addr[5],Output,PIN_107,,,,
+o_sdram_addr[4],Output,PIN_108,,,,
+o_sdram_addr[3],Output,PIN_144,,,,
+o_sdram_addr[2],Output,PIN_145,,,,
+o_sdram_addr[1],Output,PIN_146,,,,
+o_sdram_addr[0],Output,PIN_147,,,,
+o_sdram_ba[1],Output,PIN_150,,,,
+o_sdram_ba[0],Output,PIN_151,,,,
+o_sdram_ras,Output,PIN_160,,,,
+o_sdram_cas,Output,PIN_161,,,,
+o_sdram_we,Output,PIN_143,,,,
+o_sdram_cke,Output,PIN_99,,,,
+o_sdram_cs,Output,PIN_152,,,,
+o_sdram_udqm,Output,PIN_110,,,,
+o_sdram_ldqm,Output,PIN_142,,,,

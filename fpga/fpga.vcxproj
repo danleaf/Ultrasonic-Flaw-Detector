@@ -1,0 +1,125 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{51D4A509-71D6-4F85-A5B3-611269145195}</ProjectGuid>
+    <RootNamespace>UFD</RootNamespace>
+    <ProjectName>fpga</ProjectName>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v120</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v120</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup />
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <SDLCheck>true</SDLCheck>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <None Include="ADC.v" />
+    <None Include="add.v" />
+    <None Include="adusb.csv" />
+    <None Include="adusb.stp" />
+    <None Include="ad_buff.v" />
+    <None Include="AD_FIFO.v" />
+    <None Include="ad_wrapper.v" />
+    <None Include="altdualram.v" />
+    <None Include="checksum.v" />
+    <None Include="cntt.v" />
+    <None Include="cntt_bb.v" />
+    <None Include="counter.v" />
+    <None Include="crc.v" />
+    <None Include="DIVCLK.v" />
+    <None Include="dualram.v" />
+    <None Include="eth.v" />
+    <None Include="etharp.v" />
+    <None Include="eth_commu.v" />
+    <None Include="eth_session.v" />
+    <None Include="fifo.v" />
+    <None Include="GrayCounter4Bit.v" />
+    <None Include="inc.v" />
+    <None Include="indififo.v" />
+    <None Include="ip.v" />
+    <None Include="mac.v" />
+    <None Include="NUMSHOW.v" />
+    <None Include="packet.v" />
+    <None Include="pins.csv" />
+    <None Include="pins2.csv" />
+    <None Include="pll100m.v" />
+    <None Include="pll125m.v" />
+    <None Include="pll133m.v" />
+    <None Include="pll180m.v" />
+    <None Include="plladusb1.v" />
+    <None Include="plladusb2.v" />
+    <None Include="RED_RECV.v" />
+    <None Include="sdram.v" />
+    <None Include="sdramfifo.v" />
+    <None Include="sin.mif" />
+    <None Include="sindata.v" />
+    <None Include="syncfifo.v" />
+    <None Include="test.v" />
+    <None Include="testip.v" />
+    <None Include="testusb.v" />
+    <None Include="top.v" />
+    <None Include="top0.v" />
+    <None Include="triger.v" />
+    <None Include="udp.v" />
+    <None Include="ufd.csv" />
+    <None Include="usb.v" />
+    <None Include="voice.sdc" />
+    <None Include="voice.v" />
+    <None Include="wave_fifo.v" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
