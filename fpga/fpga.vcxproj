@@ -118,6 +118,9 @@
     <None Include="voice.v" />
     <None Include="wave_fifo.v" />
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\types.h" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

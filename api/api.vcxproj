@@ -81,7 +81,6 @@
   <ItemGroup>
     <ClInclude Include="api.h" />
     <ClInclude Include="stdafx.h" />
-    <ClInclude Include="types.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="api.c" />

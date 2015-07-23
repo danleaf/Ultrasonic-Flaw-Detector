@@ -10,3 +10,10 @@
 #define DEVCTRL_API __declspec(dllimport)
 #endif
 
+enum UDFDEVTYPE
+{
+    UDF_ETH,
+    UDF_USB
+};
+
+BOOL EnumerateDevices()
