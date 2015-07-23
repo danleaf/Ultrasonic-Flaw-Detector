@@ -75,7 +75,6 @@
     <None Include="altdualram.v" />
     <None Include="checksum.v" />
     <None Include="cntt.v" />
-    <None Include="cntt_bb.v" />
     <None Include="counter.v" />
     <None Include="crc.v" />
     <None Include="DIVCLK.v" />

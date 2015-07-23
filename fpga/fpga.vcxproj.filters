@@ -39,9 +39,6 @@
     <None Include="cntt.v">
       <Filter>源文件</Filter>
     </None>
-    <None Include="cntt_bb.v">
-      <Filter>源文件</Filter>
-    </None>
     <None Include="counter.v">
       <Filter>源文件</Filter>
     </None>
