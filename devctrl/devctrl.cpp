@@ -14,7 +14,7 @@ DWORD WINAPI ReceivDataProc(void* param)
     return pMgr->ReceiveDataProc();
 }
 
-BOOL EnumerateDevices(PUDF_DEVINFO *devs, int *devCount)
+BOOL EnumerateDevices(PUFD_DEVINFO *devs, int *devCount)
 {
     int devID = 1;
     char pcDriverName[256] = "";
@@ -41,10 +41,10 @@ BOOL EnumerateDevices(PUDF_DEVINFO *devs, int *devCount)
             hDevice = NULL;
         else
         {
-            UDF_DEVINFO dev;
+            UFD_DEVINFO dev;
             dev.devID = devID++;
             dev.hDevice = hDevice;
-            dev.protType = UDF_USB;
+            dev.protType = UFD_USB;
             dev.devIP = 0;
 
             CDeviceManager* mgr = new CDeviceManager(dev);
@@ -60,7 +60,7 @@ BOOL EnumerateDevices(PUDF_DEVINFO *devs, int *devCount)
     return TRUE;
 }
 
-CDeviceManager::CDeviceManager(const UDF_DEVINFO& dev)
+CDeviceManager::CDeviceManager(const UFD_DEVINFO& dev)
 {
     m_device = dev;
     m_waveRawSize = 0;
@@ -109,16 +109,16 @@ BOOL CDeviceManager::SetBuffer(int bufCount, int waveCount)
 
     DeleteBuffer();
 
-    m_buffer = new UDF_BUFFER;
+    m_buffer = new UFD_BUFFER;
     m_buffer->address = new unsigned char[m_waveSize * waveCount];
     m_buffer->reading = FALSE;
     m_buffer->waveCount = waveCount;
     m_buffer->waveSize = m_waveSize;
 
-    PUDF_BUFFER old = m_buffer;
+    PUFD_BUFFER old = m_buffer;
     for (int i = 1; i < bufCount; i++)
     {
-        PUDF_BUFFER curr = new UDF_BUFFER;
+        PUFD_BUFFER curr = new UFD_BUFFER;
         curr->address = new unsigned char[m_waveSize * waveCount];
         curr->reading = FALSE;
         curr->waveCount = waveCount;
@@ -156,11 +156,11 @@ void CDeviceManager::DeleteBuffer()
     m_currBuffer = NULL;
     m_currWaveInBuffer = 0;
 
-    PUDF_BUFFER curr = m_buffer;
+    PUFD_BUFFER curr = m_buffer;
 
     while (curr)
     {
-        PUDF_BUFFER next = curr->next;
+        PUFD_BUFFER next = curr->next;
 
         while (curr->reading)
             Sleep(0);
@@ -177,7 +177,7 @@ void CDeviceManager::DeleteBuffer()
     m_buffer = NULL;
 }
 
-BOOL CDeviceManager::WaitWavePacket(PUDF_BUFFER* pBuffer, DWORD timeout)
+BOOL CDeviceManager::WaitWavePacket(PUFD_BUFFER* pBuffer, DWORD timeout)
 {
     WaitForSingleObject(m_hPacketEvent, timeout);
 
@@ -194,7 +194,7 @@ DWORD CDeviceManager::ReceiveDataProc()
 
     while (true)
     {
-        if (UDF_USB == m_device.protType)
+        if (UFD_USB == m_device.protType)
             len = ReceiveDataUSB();
         else
             len = ReceiveDataEth();

@@ -14,9 +14,9 @@ typedef unsigned __int64    U64;
 typedef INT32 RETCODE;
 typedef void*   POINTER;
 
-typedef struct udfBuffer 
+typedef struct ufdBuffer 
 {
-    struct udfBuffer* next;
+    struct ufdBuffer* next;
 
     unsigned char*     address;
     int     waveSize;
@@ -34,6 +34,6 @@ typedef struct udfBuffer
         InterlockedCompareExchange(&reading, FALSE, TRUE);
     }
 }
-UDF_BUFFER, *PUDF_BUFFER;
+UFD_BUFFER, *PUFD_BUFFER;
 
 #endif
