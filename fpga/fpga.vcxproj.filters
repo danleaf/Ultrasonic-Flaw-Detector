@@ -66,9 +66,6 @@
     <None Include="fifo.v">
       <Filter>源文件</Filter>
     </None>
-    <None Include="GrayCounter4Bit.v">
-      <Filter>源文件</Filter>
-    </None>
     <None Include="inc.v">
       <Filter>源文件</Filter>
     </None>

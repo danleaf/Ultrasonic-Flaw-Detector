@@ -84,7 +84,6 @@
     <None Include="eth_commu.v" />
     <None Include="eth_session.v" />
     <None Include="fifo.v" />
-    <None Include="GrayCounter4Bit.v" />
     <None Include="inc.v" />
     <None Include="indififo.v" />
     <None Include="ip.v" />
