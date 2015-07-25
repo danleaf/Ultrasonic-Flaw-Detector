@@ -22,6 +22,9 @@ incremental_db/
 *.txt
 *.cdf
 *.dpf
+*.jdi
+*.lib
+*.dll
 
 # Build results
 

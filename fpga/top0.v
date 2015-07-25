@@ -55,7 +55,7 @@ module top0
 	wire [15:0] ad_dual_data;
 	wire ad_rd_empty;
 	
-	/*reg [7:0] ii_ad_data;
+	reg [7:0] ii_ad_data;
 	reg [1:0] trigcnt;
 	reg _trig;
 	
@@ -75,8 +75,8 @@ module top0
 			trigcnt <= (trigcnt == 'd1) ? 'd1 : trigcnt + 1'd1;
 		end
 		else
-			ii_ad_data <= (ii_ad_data == 'd199) ? 0 : ii_ad_data + 1'd1;
-	end*/
+			ii_ad_data <= (ii_ad_data == 'd10) ? 0 : ii_ad_data + 1'd1;
+	end
 	
 	
 	ad_wrapper ad_wrapper_inst (
@@ -91,7 +91,7 @@ module top0
 		 .i_stout(1'b0),
 		 .o_rd_empty(ad_rd_empty),
 		 .o_ad_open(),
-		 .i_recv_count(16'd1),
+		 .i_recv_count(16'd512),
 		 .o_working()
 	);
 	
