@@ -48,7 +48,7 @@ module ad_buff
 		if(working)
 		begin
 			cnt <= cnt + 1'b1;
-			dual_data <= {dual_data[ODSIZE-DSIZE-1:0],i_ad_data};
+			dual_data <= {i_ad_data,dual_data[ODSIZE-1:DSIZE]};
 		end
 		else
 			cnt <= 0;

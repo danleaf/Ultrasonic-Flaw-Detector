@@ -11,8 +11,8 @@ module top0
 	output o_clk_ad,
 	input [7:0] i_ad_data,
 	
-	input i_usb_flagb,
-	output [15:0] o_usb_data,
+	input i_usb_flagb,i_usb_flagc,
+	inout [15:0] io_usb_data,
 	output o_usb_addr0,
 	output o_usb_addr1,
 	output o_usb_ifclk,
@@ -48,7 +48,7 @@ module top0
 		.rst_n(i_rst_n), 
 		.q(trig), 
 		.q2(o_trig),
-		.led(o_led),
+		.led(/*o_led*/),
 		.dac_data(o_da_data)
 	);	
 	
@@ -91,20 +91,28 @@ module top0
 		 .i_stout(1'b0),
 		 .o_rd_empty(ad_rd_empty),
 		 .o_ad_open(),
-		 .i_recv_count(16'd8000),
+		 .i_recv_count(16'd9000),
 		 .o_working()
 	);
 	
 	wire full;
+	wire [3:0] nouse;
+	wire [31:0] param;
+	
 	
 	usb uu(
 		.i_rst_n(i_rst_n),
 		.i_clk_sys(clk_sys_100M),
 		.i_clk_usb(clk_usb_48M),
 		.i_wr(!ad_rd_empty),
-		.i_data(ad_dual_data),
+		.i_wr_data(ad_dual_data),
+		.o_cmd_come(),
+		.o_cmd({nouse,o_led}),
+		.o_cmd_param(param),
+		.o_full(),
 		.i_flagb(i_usb_flagb),
-		.o_data(o_usb_data),
+		.i_flagc(i_usb_flagc),
+		.io_data(io_usb_data),
 		.o_addr0(o_usb_addr0),
 		.o_addr1(o_usb_addr1),
 		.o_slcs(o_usb_slcs),

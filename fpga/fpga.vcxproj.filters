@@ -171,6 +171,33 @@
     <None Include="adusb.csv">
       <Filter>资源文件</Filter>
     </None>
+    <None Include="sindata.qip">
+      <Filter>资源文件</Filter>
+    </None>
+    <None Include="plladusb2.qip">
+      <Filter>资源文件</Filter>
+    </None>
+    <None Include="plladusb1.qip">
+      <Filter>资源文件</Filter>
+    </None>
+    <None Include="pll180m.qip">
+      <Filter>资源文件</Filter>
+    </None>
+    <None Include="pll133m.qip">
+      <Filter>资源文件</Filter>
+    </None>
+    <None Include="pll125m.qip">
+      <Filter>资源文件</Filter>
+    </None>
+    <None Include="pll100m.qip">
+      <Filter>资源文件</Filter>
+    </None>
+    <None Include="dualram.qip">
+      <Filter>资源文件</Filter>
+    </None>
+    <None Include="altdualram.qip">
+      <Filter>资源文件</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\types.h">

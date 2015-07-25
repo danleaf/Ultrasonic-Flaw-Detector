@@ -10,7 +10,7 @@ module triger(
 
 	localparam fclk = 50000000;
 	localparam tick = 20;
-	localparam f = 400;		//1000HZ
+	localparam f = 100;		//1000HZ
 	localparam th = 1000;		//1000ns
 	localparam div = fclk / f;	
 	localparam divh = th / tick;
@@ -23,7 +23,6 @@ module triger(
 	
 	assign q = s;
 	assign q2 = delay[7];
-	assign dac_clk = clk;
 	//assign dac_data = data;
 	
 	reg [9:0] sinaddr;
@@ -49,7 +48,7 @@ module triger(
 			cnt <= cnt + 1'd1;
 		
 		data <= 8'd100;
-		sinaddr <= sinaddr + 'd1;
+		sinaddr <= sinaddr + 1'd1;
 		
 		delay <= {delay[6:0],s};
 	end

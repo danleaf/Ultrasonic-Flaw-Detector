@@ -4,35 +4,42 @@ module usb
 	input i_clk_sys,
 	input i_clk_usb,
 	input i_wr,
-	input [15:0] i_data,
+	input [15:0] i_wr_data,
 	output o_full,
+	output reg o_cmd_come,
+	output reg [7:0] o_cmd,
+	output reg [31:0] o_cmd_param,
 	
 	//connect with USB chip
-	input i_flagb,
-	output [15:0] o_data,
+	input i_flagb,i_flagc,
+	inout [15:0] io_data,
 	output o_addr0,
-	output o_addr1,
+	output reg o_addr1,
 	output o_slcs,
-	output o_sloe,
-	output o_slrd,
+	output reg o_sloe,
+	output reg o_slrd,
 	output o_slwr,
 	output reg o_slpked
 );
 
-	localparam ST_IDEL = 'H1;
-	localparam ST_RD_BUF = 'H2;
-	localparam ST_WRITE = 'H4;
-	localparam ST_FULL_WAIT = 'H8;
-	localparam ST_FULL_END = 'H16;
+	localparam ST_IDEL = 8'd1;
+	localparam ST_RD_BUF = 8'd2;
+	localparam ST_WRITE = 8'd4;
+	localparam ST_FULL_WAIT = 8'd8;
+	localparam ST_FULL_END = 8'd16;
+	localparam ST_WRITE_END = 8'd32;
+	localparam ST_PREP_RX = 8'd64;
+	localparam ST_PREP_CMD = 8'd128;
 	
 	wire empty;
-	reg rd,slwr,slpked;
+	reg rd,slwr;
+	reg [13:0] urdcnt;
+	wire [15:0] buf_out;
+	reg [15:0] cmdcache[0:2];
+	reg [1:0] ccidx;
 	
 	assign o_slcs  = 1'b0;
 	assign o_addr0 = 1'b0;
-	assign o_addr1 = 1'b1;
-	assign o_slrd = 'b1;
-	assign o_sloe = 'b1;
 	
 	assign o_slwr = !(!slwr & i_flagb);
 	
@@ -42,29 +49,97 @@ module usb
 		.rst(i_rst_n),
 		.rreq(rd & i_flagb),
 		.wreq(i_wr),    
-		.wdata(i_data),   
-		.rdata(o_data),
+		.wdata(i_wr_data),   
+		.rdata(buf_out),
 		.full(o_full), 
 		.empty(empty));
-		
 	
 	reg [7:0] state;
+	
+	assign io_data = (state != ST_PREP_RX) ? buf_out : {16{1'bz}};
+	
 	always @(posedge i_clk_usb or negedge i_rst_n)
-	begin
 	if(!i_rst_n)
-		begin
-		slwr <= 'b1;
+	begin
+		slwr <= 1'b1;
 		rd <= 0;
 		state <= ST_IDEL;
-		end
+		o_slpked <= 1'd1;
+		empcnt <= 0;
+		urdcnt <= 0;
+		o_addr1 <= 1'b1;
+		o_sloe <= 'b1;
+		o_slrd <= 1'b1;
+		ccidx <= 0;
+		o_cmd_come <= 0;
+		o_cmd <= 0;
+		o_cmd_param <= 0;
+	end
 	else
+	begin
+		if(state != ST_IDEL)
+			urdcnt <= &urdcnt ? urdcnt : urdcnt + 1'd1;
+			
+		if(state != ST_PREP_CMD)
+			o_cmd_come <= 0;
+			
 		case(state)
 		ST_IDEL:
-		if(!empty & i_flagb)
 		begin
-			rd <= 1'd1;
-			state <= ST_RD_BUF;
+			if(&urdcnt & i_flagc)
+			begin
+				urdcnt <= 0;
+				o_addr1 <= 0;
+				o_sloe <= 0;
+				o_slrd <= 0;
+				state <= ST_PREP_RX;
+			end
+			else
+			begin
+				urdcnt <= urdcnt + 1'd1;			
+			
+				if(!empty & i_flagb)
+				begin
+					rd <= 1'd1;
+					state <= ST_RD_BUF;
+				end
+			end
 		end
+		
+		ST_PREP_RX:
+		if(!i_flagc)
+		begin
+			o_addr1 <= 1'b1;
+			o_sloe <= 1'b1;
+			o_slrd <= 1'b1;
+			ccidx <= 0;
+			state <= ST_IDEL;
+		end
+		else
+		begin
+			ccidx <= ccidx + 1'd1;
+			cmdcache[ccidx] <= io_data;
+			if(ccidx == 2'd2)
+			begin
+				o_addr1 <= 1'b1;
+				o_sloe <= 1'b1;
+				o_slrd <= 1'b1;
+				ccidx <= 0;
+				state <= ST_PREP_CMD;
+			end
+		end
+		
+		ST_PREP_CMD:
+		begin
+			if(cmdcache[0][15:8] == ~cmdcache[0][7:0])
+			begin
+				o_cmd_come <= 1'd1;
+				o_cmd <= cmdcache[0][7:0];
+				o_cmd_param <= {cmdcache[1],cmdcache[2]};
+			end
+			state <= ST_IDEL;
+		end
+		
 		
 		ST_RD_BUF:
 		begin
@@ -83,7 +158,7 @@ module usb
 		begin
 			rd <= 1'd0;
 			slwr <= 1'd1;
-			state <= ST_IDEL;
+			state <= ST_WRITE_END;
 		end
 		
 		ST_FULL_WAIT:
@@ -108,7 +183,32 @@ module usb
 		begin
 			rd <= 1'd0;
 			slwr <= 1'd1;
-			state <= ST_IDEL;
+			state <= ST_WRITE_END;
+		end
+		
+		ST_WRITE_END:
+		begin
+			empcnt <= empcnt + 1'd1;
+			
+			if(empcnt == 3'd6)
+			begin
+				o_slpked <= 'd0;
+				empcnt <= 3'd7;
+			end
+			else if(empcnt == 'd7)
+			begin
+				o_slpked <= 'd1;
+				state <= ST_IDEL;
+				empcnt <= 0;
+			end
+			else if(!empty & i_flagb)
+			begin
+				rd <= 1'd1;
+				state <= ST_RD_BUF;
+				empcnt <= 0;
+			end
+			else
+				empcnt <= empcnt + 1'd1;
 		end
 		
 		default:
@@ -118,7 +218,7 @@ module usb
 	
 	reg [3:0] empcnt;
 	
-	always @(posedge i_clk_usb or negedge i_rst_n)
+	/*always @(posedge i_clk_usb or negedge i_rst_n)
 	if(!i_rst_n)
 	begin
 		o_slpked <= 'd1;
@@ -135,7 +235,7 @@ module usb
 			o_slpked <= 'd0;
 		else if(empcnt == 'd14 || empcnt == 0)
 			o_slpked <= 'd1;
-	end
+	end*/
 	
 	/*reg	[1:0]	STATE;
 
@@ -150,7 +250,7 @@ module usb
 	assign o_sloe = 1'b1;
 	assign o_slpked = slpked;
 	assign o_slwr = u_slwr;
-	assign o_data = i_data;//{8'd0,i_ad_data};
+	assign io_data = i_wr_data;//{8'd0,i_ad_data};
 	
 	reg     u_slwr;
 	
