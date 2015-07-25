@@ -91,7 +91,7 @@ module top0
 		 .i_stout(1'b0),
 		 .o_rd_empty(ad_rd_empty),
 		 .o_ad_open(),
-		 .i_recv_count(16'd9000),
+		 .i_recv_count(16'd1),
 		 .o_working()
 	);
 	

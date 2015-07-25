@@ -171,6 +171,9 @@
     <None Include="sindata.qip">
       <Filter>资源文件</Filter>
     </None>
+    <None Include="ufd.pin">
+      <Filter>资源文件</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\types.h">

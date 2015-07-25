@@ -10,7 +10,7 @@ module triger(
 
 	localparam fclk = 50000000;
 	localparam tick = 20;
-	localparam f = 100;		//1000HZ
+	localparam f = 5;		//1000HZ
 	localparam th = 1000;		//1000ns
 	localparam div = fclk / f;	
 	localparam divh = th / tick;

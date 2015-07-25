@@ -17,10 +17,11 @@ incremental_db/
 *.done
 *.smsg
 *.summary
-*.pin
 *.sof
 *.pof
 *.txt
+*.cdf
+*.dpf
 
 # Build results
 

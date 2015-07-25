@@ -74,6 +74,9 @@ module usb
 		o_cmd_come <= 0;
 		o_cmd <= 0;
 		o_cmd_param <= 0;
+		cmdcache[0] <= 0;
+		cmdcache[1] <= 0;
+		cmdcache[2] <= 0;
 	end
 	else
 	begin

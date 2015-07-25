@@ -113,6 +113,7 @@
     <None Include="triger.v" />
     <None Include="udp.v" />
     <None Include="ufd.csv" />
+    <None Include="ufd.pin" />
     <None Include="usb.v" />
     <None Include="voice.sdc" />
     <None Include="voice.v" />
