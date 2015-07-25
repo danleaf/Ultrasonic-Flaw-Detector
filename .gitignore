@@ -7,11 +7,20 @@
 *.sln.docstates
 
 # Quartus II files
+db/
+incremental_db/
 *.qpf
 *.qsf
 *.bak
 *.qip
-db/
+*.rpt
+*.done
+*.smsg
+*.summary
+*.pin
+*.sof
+*.pof
+*.txt
 
 # Build results
 
