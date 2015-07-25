@@ -6,6 +6,13 @@
 *.user
 *.sln.docstates
 
+# Quartus II files
+*.qpf
+*.qsf
+*.bak
+*.qip
+db/
+
 # Build results
 
 [Dd]ebug/
