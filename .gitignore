@@ -9,6 +9,15 @@
 # Quartus II files
 db/
 incremental_db/
+inc/
+lib/
+*.LST
+*.hex
+*.M51
+*.iic
+*.lnp
+*.plg
+slavefifo
 *.qpf
 *.qsf
 *.bak
