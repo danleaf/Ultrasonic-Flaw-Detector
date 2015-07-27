@@ -10,9 +10,9 @@
 //-----------------------------------------------------------------------------
 // Copyright 2003, Cypress Semiconductor Corporation
 //-----------------------------------------------------------------------------
-#include "inc\fx2.h"
-#include "inc\fx2regs.h"
-#include "inc\syncdly.h"            // SYNCDELAY macro
+#include "..\inclib\fx2.h"
+#include "..\inclib\fx2regs.h"
+#include "..\inclib\syncdly.h"            // SYNCDELAY macro
 
 //-----------------------------------------------------------------------------
 // Constants

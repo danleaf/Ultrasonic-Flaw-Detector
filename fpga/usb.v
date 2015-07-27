@@ -55,6 +55,7 @@ module usb
 		.empty(empty));
 	
 	reg [7:0] state;
+	reg [3:0] empcnt;
 	
 	assign io_data = (state != ST_PREP_RX) ? buf_out : {16{1'bz}};
 	
@@ -193,22 +194,30 @@ module usb
 		begin
 			empcnt <= empcnt + 1'd1;
 			
-			if(empcnt == 3'd6)
+			if(empcnt == 4'd14)
 			begin
-				o_slpked <= 'd0;
-				empcnt <= 3'd7;
+				o_slpked <= 0;
+				empcnt <= 4'd15;
 			end
-			else if(empcnt == 'd7)
+			else if(empcnt == 4'd15)
 			begin
-				o_slpked <= 'd1;
+				o_slpked <= 1'd1;
 				state <= ST_IDEL;
 				empcnt <= 0;
 			end
-			else if(!empty & i_flagb)
+			else if(!empty)
 			begin
-				rd <= 1'd1;
-				state <= ST_RD_BUF;
-				empcnt <= 0;
+				if(i_flagb)
+				begin
+					rd <= 1'd1;
+					state <= ST_RD_BUF;
+					empcnt <= 0;
+				end
+				else
+				begin
+					state <= ST_IDEL;
+					empcnt <= 0;
+				end
 			end
 			else
 				empcnt <= empcnt + 1'd1;
@@ -218,8 +227,6 @@ module usb
 			state <= ST_IDEL;
 		endcase
 	end
-	
-	reg [3:0] empcnt;
 	
 	/*always @(posedge i_clk_usb or negedge i_rst_n)
 	if(!i_rst_n)

@@ -3,6 +3,7 @@
 
 #include "stdafx.h"
 #include "devctrl.h"
+#include "defines.h"
 #include <assert.h>
 
 map<U32, CDeviceManager*> devmgrs;
@@ -14,48 +15,58 @@ DWORD WINAPI ReceivDataProc(void* param)
     return pMgr->ReceiveDataProc();
 }
 
-BOOL EnumerateDevices(PUFD_DEVINFO *devs, int *devCount)
+BOOL __stdcall EnumerateDevices(int *devIDs, int *devCount)
 {
-    int devID = 1;
-    char pcDriverName[256] = "";
-    int i;
-    for (i = 0; i<32; i++)
+    if (devCount == 0)
+        return TRUE;
+
+    int devID = 0;
+
+    CCyUSBDevice* usbdev = new CCyUSBDevice(NULL, CYUSBDRV_GUID, true);
+    CCyUSBEndPoint* inEndPoint = usbdev->BulkInEndPt;
+    CCyUSBEndPoint* outEndPoint = usbdev->BulkOutEndPt;
+   
+    usbdev->Reset();
+    /*CCyUSBEndPoint* inEndPoint = NULL;
+    CCyUSBEndPoint* outEndPoint = NULL;
+
+    usbdev->SetAltIntfc(0);
+
+
+    int eptCnt = usbdev->EndPointCount();
+
+    for (int e = 1; e < eptCnt; e++)
     {
-        sprintf_s(pcDriverName, 256, "Ezusb-%d", i);
+        CCyUSBEndPoint *ept = usbdev->EndPoints[e];
+        if (ept->Address == 0x2)
+            outEndPoint = ept;
+        if (ept->Address == 0x86)
+            inEndPoint = ept;
+    }*/
 
-        char completeDeviceName[64] = "";
-        char pcMsg[64] = "";
 
-        strcat_s(completeDeviceName, 64, "\\\\.\\");
-        strcat_s(completeDeviceName, 64, pcDriverName);
+    if (outEndPoint != NULL && inEndPoint != NULL)
+    {
+        UFD_DEVINFO dev;
+        dev.devID = devID;
+        dev.protType = UFD_USB;
+        dev.devIP = 0;
+        dev.usbDev.dev = usbdev;
+        dev.usbDev.inEndPoint = inEndPoint;
+        dev.usbDev.outEndPoint = outEndPoint;
 
-        HANDLE hDevice = CreateFileA(completeDeviceName,
-            GENERIC_WRITE | GENERIC_READ,
-            FILE_SHARE_WRITE | FILE_SHARE_READ,
-            NULL,
-            OPEN_EXISTING,
-            0,
-            NULL);
+        devIDs[devID] = devID;
+        CDeviceManager* mgr = new CDeviceManager(dev);
+        devmgrs[devID] = mgr;
 
-        if (hDevice == INVALID_HANDLE_VALUE)
-            hDevice = NULL;
-        else
-        {
-            UFD_DEVINFO dev;
-            dev.devID = devID++;
-            dev.hDevice = hDevice;
-            dev.protType = UFD_USB;
-            dev.devIP = 0;
 
-            CDeviceManager* mgr = new CDeviceManager(dev);
-            devmgrs[dev.devID] = mgr;
-        }
+        devID = devID + 1;
     }
 
-    if (i == 32)
-    {
+    if (devID == 0)
         return FALSE;
-    }
+
+    *devCount = devID;
 
     return TRUE;
 }
@@ -74,7 +85,9 @@ CDeviceManager::CDeviceManager(const UFD_DEVINFO& dev)
     m_cache = new unsigned char[CACHE_SIZE];
     m_hPacketEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
 
-    m_hThread = CreateThread(NULL, 0, ::ReceivDataProc, this, 0, &m_dwThreadID);
+    m_hThread = CreateThread(NULL, 0, ::ReceivDataProc, this, CREATE_SUSPENDED, &m_dwThreadID);
+    SetThreadPriority(m_hThread, 31);
+    ResumeThread(m_hThread);
 }
 
 CDeviceManager::~CDeviceManager()
@@ -84,45 +97,45 @@ CDeviceManager::~CDeviceManager()
     delete m_cache;
 }
 
-BOOL CDeviceManager::StartDevice()
+int CDeviceManager::StartDevice()
 {
-    return TRUE;
+    return 0;
 }
 
-BOOL CDeviceManager::StopDevice()
+int CDeviceManager::StopDevice()
 {
-    return TRUE;
+    return 0;
 }
 
-BOOL CDeviceManager::SetWaveParam(int rawSize, int rate)
+int CDeviceManager::SetWaveParam(int rawSize, int rate)
 {
     m_waveRawSize = rawSize;
     m_waveSize = rawSize / rate;
     m_compressRate = rate;
 
-    return TRUE;
+    return 0;
 }
 
-BOOL CDeviceManager::SetBuffer(int bufCount, int waveCount)
+int CDeviceManager::SetBuffer(int bufCount, int waveCount)
 {
     assert(bufCount > 0);
 
     DeleteBuffer();
 
     m_buffer = new UFD_BUFFER;
-    m_buffer->address = new unsigned char[m_waveSize * waveCount];
+    m_buffer->buffer.address = new unsigned char[m_waveSize * waveCount];
     m_buffer->reading = FALSE;
-    m_buffer->waveCount = waveCount;
-    m_buffer->waveSize = m_waveSize;
+    m_buffer->buffer.waveCount = waveCount;
+    m_buffer->buffer.waveSize = m_waveSize;
 
     PUFD_BUFFER old = m_buffer;
     for (int i = 1; i < bufCount; i++)
     {
         PUFD_BUFFER curr = new UFD_BUFFER;
-        curr->address = new unsigned char[m_waveSize * waveCount];
+        curr->buffer.address = new unsigned char[m_waveSize * waveCount];
         curr->reading = FALSE;
-        curr->waveCount = waveCount;
-        curr->waveSize = m_waveSize;
+        curr->buffer.waveCount = waveCount;
+        curr->buffer.waveSize = m_waveSize;
 
         old->next = curr;
         old = curr;
@@ -135,18 +148,18 @@ BOOL CDeviceManager::SetBuffer(int bufCount, int waveCount)
     m_currBuffer = m_buffer;
     m_currWaveInBuffer = 0;
 
-    return TRUE;
+    return 0;
 }
 
-BOOL CDeviceManager::SetWaveAndBufferParam(int waveRawSize, int waveRate, int bufCount, int waveCount)
+int CDeviceManager::SetWaveAndBufferParam(int waveRawSize, int waveRate, int bufCount, int waveCount)
 {
     StopDevice();
-    Sleep(100);
+    //Sleep(100);
     SetWaveParam(waveRawSize, waveRate);
     SetBuffer(bufCount, waveCount);
     StartDevice();
 
-    return TRUE;
+    return 0;
 }
 
 void CDeviceManager::DeleteBuffer()
@@ -155,6 +168,8 @@ void CDeviceManager::DeleteBuffer()
     m_bufferCount = 0;
     m_currBuffer = NULL;
     m_currWaveInBuffer = 0;
+
+    //Sleep(100);
 
     PUFD_BUFFER curr = m_buffer;
 
@@ -165,7 +180,7 @@ void CDeviceManager::DeleteBuffer()
         while (curr->reading)
             Sleep(0);
 
-        delete curr->address;
+        delete curr->buffer.address;
         delete curr;
 
         if (next == m_buffer)
@@ -177,15 +192,21 @@ void CDeviceManager::DeleteBuffer()
     m_buffer = NULL;
 }
 
-BOOL CDeviceManager::WaitWavePacket(PUFD_BUFFER* pBuffer, DWORD timeout)
+int CDeviceManager::WaitWavePacket(PUFD_BUFFER* pBuffer, DWORD timeout)
 {
-    WaitForSingleObject(m_hPacketEvent, timeout);
+    DWORD ret = WaitForSingleObject(m_hPacketEvent, timeout);
+
+    if (WAIT_TIMEOUT == ret)
+        return -1;
 
     if (m_readyBuffer->reading)
-        return FALSE;
+        return -1;
 
     m_readyBuffer->InterlockedSetReading();
-    return TRUE;
+
+    *pBuffer = m_readyBuffer;
+
+    return 0;
 }
 
 DWORD CDeviceManager::ReceiveDataProc()
@@ -199,22 +220,25 @@ DWORD CDeviceManager::ReceiveDataProc()
         else
             len = ReceiveDataEth();
 
-        if (len < 0)
+        //continue;
+
+        if (len <= 0)
         {
             Sleep(0);
             continue;
         }
 
-        if (len == m_waveSize)
+        if (NULL != m_currBuffer)
         {
-            memcpy(&m_currBuffer->address[m_currBuffer->waveSize*m_currWaveInBuffer],
-                m_cache, len);
+            memcpy(&m_currBuffer->buffer.address[m_currBuffer->buffer.waveSize*m_currWaveInBuffer], \
+                m_cache, m_currBuffer->buffer.waveSize);
 
             m_currWaveInBuffer++;
             if (m_currWaveInBuffer == m_bufferWaveCount)
             {
                 m_readyBuffer = m_currBuffer;
                 m_currBuffer = m_currBuffer->next;
+                m_currWaveInBuffer = 0;
                 SetEvent(m_hPacketEvent);
             }
         }
@@ -228,21 +252,11 @@ DWORD CDeviceManager::ReceiveDataProc()
 
 int CDeviceManager::ReceiveDataUSB()
 {
-    BULK_TRANSFER_CONTROL myrequest;
-    DWORD lenBytes = 0;
+    LONG lenBytes = CACHE_SIZE;
 
-    myrequest.pipeNum = 1;
-
-    BOOL bResult = DeviceIoControl(m_device.hDevice,
-        IOCTL_EZUSB_BULK_READ,
-        &myrequest,
-        sizeof(BULK_TRANSFER_CONTROL),
-        m_cache,
-        CACHE_SIZE,
-        (unsigned long *)&lenBytes,
-        NULL);
-
-    if (!bResult)
+    bool ret = m_device.usbDev.inEndPoint->XferData(m_cache, lenBytes);
+        
+    if (!ret)
         return -1;
 
     return lenBytes;
@@ -251,4 +265,100 @@ int CDeviceManager::ReceiveDataUSB()
 int CDeviceManager::ReceiveDataEth()
 {
     return 0;
+}
+
+int CDeviceManager::SendData(unsigned char* buffer, int len)
+{
+    if (UFD_USB == m_device.protType)
+        return SendDataUSB(buffer, len);
+    else
+        return SendDataEth(buffer, len);
+}
+
+int CDeviceManager::SendDataUSB(unsigned char* buffer, int len)
+{
+    LONG lenBytes = len;
+
+    bool ret = m_device.usbDev.outEndPoint->XferData(buffer, lenBytes);
+
+    if (!ret)
+        return -1;
+
+    return lenBytes;
+}
+
+int CDeviceManager::SendDataEth(unsigned char* buffer, int len)
+{
+    return 0;
+}
+
+int __stdcall SetWaveAndBufferParam(int uDevID, int waveRawSize, int waveRate, int bufCount, int waveCount)
+{
+    map<U32, CDeviceManager*>::iterator itFind = devmgrs.find(uDevID);
+
+    if (itFind == devmgrs.end())
+        return -1;
+
+    itFind->second->SetWaveAndBufferParam(waveRawSize, waveRate, bufCount, waveCount);
+    return 0;
+}
+
+int __stdcall StartDevice(int uDevID)
+{
+    map<U32, CDeviceManager*>::iterator itFind = devmgrs.find(uDevID);
+
+    if (itFind == devmgrs.end())
+        return -1;
+
+    itFind->second->StartDevice();
+    return 0;
+}
+
+int __stdcall StopDevice(int uDevID)
+{
+    map<U32, CDeviceManager*>::iterator itFind = devmgrs.find(uDevID);
+
+    if (itFind == devmgrs.end())
+        return -1;
+
+    itFind->second->StopDevice();
+    return 0;
+}
+
+int __stdcall WaitWavePacket(int uDevID, PWAVBUFFER* pBuffer, unsigned int timeout)
+{
+    *pBuffer = NULL;
+
+    map<U32, CDeviceManager*>::iterator itFind = devmgrs.find(uDevID);
+
+    if (itFind == devmgrs.end())
+        return -1;
+
+    PUFD_BUFFER pUfdBuffer;
+
+    int ret = itFind->second->WaitWavePacket(&pUfdBuffer, timeout);
+    if (DEVCTRL_SUCCESS == ret)
+    {
+        *pBuffer = (PWAVBUFFER)pUfdBuffer;
+    }
+
+    return ret;
+}
+
+int __stdcall ReleasePacket(int uDevID, PWAVBUFFER pBuffer)
+{
+    if (pBuffer)
+        ((PUFD_BUFFER)pBuffer)->InterlockedUnSetReading();
+
+    return DEVCTRL_SUCCESS;
+}
+
+int __stdcall SendPacket(int uDevID, unsigned char* buffer, int len)
+{
+    map<U32, CDeviceManager*>::iterator itFind = devmgrs.find(uDevID);
+
+    if (itFind == devmgrs.end())
+        return -1;
+
+    return itFind->second->SendData(buffer,len);
 }

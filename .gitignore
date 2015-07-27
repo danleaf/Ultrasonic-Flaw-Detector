@@ -9,8 +9,7 @@
 # Quartus II files
 db/
 incremental_db/
-inc/
-lib/
+inclib/
 *.LST
 *.hex
 *.M51

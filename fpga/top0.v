@@ -71,11 +71,11 @@ module top0
 		_trig <= o_trig;
 		if(!_trig & o_trig)
 		begin
-			ii_ad_data <= 'd251;
+			ii_ad_data <= 'd0;//252;
 			trigcnt <= (trigcnt == 'd1) ? 'd1 : trigcnt + 1'd1;
 		end
 		else
-			ii_ad_data <= (ii_ad_data == 'd10) ? 0 : ii_ad_data + 1'd1;
+			ii_ad_data <= /*(ii_ad_data == 'd10) ? 0 : */ii_ad_data + 1'd1;
 	end
 	
 	
@@ -83,15 +83,15 @@ module top0
 		 .i_ad_clk(clk_ad_180M),
 		 .i_rd_clk(clk_sys_100M),
 		 .i_rst_n(i_rst_n),
-		 .i_ad_data(i_ad_data), 
-		 //.i_ad_data(ii_ad_data),	 
+		 //.i_ad_data(i_ad_data), 
+		 .i_ad_data(ii_ad_data),	 
 		 .o_dual_data(ad_dual_data),
 		 .i_st(trig),
 		 .i_auto(1'b0),
 		 .i_stout(1'b0),
 		 .o_rd_empty(ad_rd_empty),
 		 .o_ad_open(),
-		 .i_recv_count(16'd512),
+		 .i_recv_count(16'd10000),
 		 .o_working()
 	);
 	

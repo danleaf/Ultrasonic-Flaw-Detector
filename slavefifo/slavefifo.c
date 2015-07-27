@@ -6,9 +6,9 @@
 //              This firmware is used to test the FX ext. master CY3682 DK
 //   Copyright (c) 2001 Cypress Semiconductor All rights reserved
 //-----------------------------------------------------------------------------
-#include "inc\fx2.h"
-#include "inc\fx2regs.h"
-#include "inc\fx2sdly.h"            // SYNCDELAY macro
+#include "..\inclib\fx2.h"
+#include "..\inclib\fx2regs.h"
+#include "..\inclib\fx2sdly.h"            // SYNCDELAY macro
 
 extern BOOL GotSUD;             // Received setup data flag
 extern BOOL Sleep;
