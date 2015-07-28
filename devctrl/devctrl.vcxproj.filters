@@ -21,10 +21,13 @@
     <ClInclude Include="stdafx.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="defines.h">
+    <ClInclude Include="devctrl.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="devctrl.h">
+    <ClInclude Include="devmgr.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="types.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
@@ -33,6 +36,12 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="stdafx.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="dllmain.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="devmgr.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

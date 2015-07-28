@@ -28,7 +28,9 @@ protected:
     bool run;
     int devID;
     DWORD dwThreadID;
-    PWAVBUFFER m_pBuffer;
+    int waveSize;
+    int waveCount;
+    unsigned char* m_buffer;
 
 	// 生成的消息映射函数
 	virtual BOOL OnInitDialog();
@@ -36,10 +38,10 @@ protected:
 	afx_msg HCURSOR OnQueryDragIcon();
     DECLARE_MESSAGE_MAP()
 public:
-    afx_msg void OnBnClickedExit();
     afx_msg void OnTimer(UINT_PTR id);
     afx_msg void OnLButtonUp(UINT_PTR id, CPoint pt);
     afx_msg void OnRButtonUp(UINT_PTR id, CPoint pt);
+    afx_msg void OnClose();
     afx_msg LRESULT OnWavePacket(WPARAM wParam, LPARAM lParam);
 protected:
     void ShowWave(CPaintDC& dc, RECT& rc);

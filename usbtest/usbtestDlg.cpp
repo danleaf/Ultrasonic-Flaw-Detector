@@ -23,7 +23,7 @@ CUsbtestDlg::CUsbtestDlg(CWnd* pParent /*=NULL*/)
     run = true;
     curNo = 0;
     ifile = 0;
-    m_pBuffer = NULL;
+    m_buffer = NULL;
 }
 
 void CUsbtestDlg::DoDataExchange(CDataExchange* pDX)
@@ -36,7 +36,7 @@ BEGIN_MESSAGE_MAP(CUsbtestDlg, CDialog)
     ON_WM_QUERYDRAGICON()
     ON_WM_LBUTTONUP()
     ON_WM_RBUTTONUP()
-    ON_MESSAGE(0x1000, OnWavePacket)
+    ON_WM_CLOSE()
 END_MESSAGE_MAP()
 
 
@@ -63,24 +63,27 @@ BOOL CUsbtestDlg::OnInitDialog()
 
     int devCount = 1;
 
-    if (!EnumerateDevices(&devID, &devCount))
+    if (DEVCTRL_SUCCESS != EnumerateDevices(&devID, &devCount))
     {
         AfxMessageBox(_T("打开USB Slave失败,程序即将关闭!"));
         PostQuitMessage(-1);
     }
 
-    SetWaveAndBufferParam(devID, 10000, 1, 10, 100);
+    waveSize = 512;
+    waveCount = 10;
 
-    HANDLE h = CreateThread(NULL, 0, ::WaitWaveProc, this, CREATE_SUSPENDED, &dwThreadID);
-    SetThreadPriority(h, 31);
-    ResumeThread(h);
+    SetWaveParam(devID, waveSize, 1);
+
+    for (int i = 0; i < 10; i++)
+    {
+        unsigned char* buf = new unsigned char[waveSize*waveCount];
+        AddBuffer(devID, buf, waveSize*waveCount);
+    }
+
+    HANDLE h = CreateThread(NULL, 0, ::WaitWaveProc, this, 0, &dwThreadID);
 
 	return TRUE;  // 除非将焦点设置到控件，否则返回 TRUE
 }
-
-// 如果向对话框添加最小化按钮，则需要下面的代码
-//  来绘制该图标。  对于使用文档/视图模型的 MFC 应用程序，
-//  这将由框架自动完成。
 
 void CUsbtestDlg::OnPaint()
 {
@@ -113,24 +116,42 @@ void CUsbtestDlg::OnPaint()
 
 void CUsbtestDlg::OnLButtonUp(UINT_PTR id, CPoint pt)
 {
-    run = !run;
+    static int i = 0;
+    if (i % 2 == 0)
+    {
+        if (pt.x < 300)
+            SendCommand(devID, CMD_SET_TRIG_MODE, 1);
+        else
+            SendCommand(devID, CMD_SET_TRIG_FREQU, 1000);
+    }
+    else
+    {
+        if (pt.x < 300)
+            SendCommand(devID, CMD_SET_TRIG_MODE, 0);
+        else
+            SendCommand(devID, CMD_SET_TRIG_FREQU, 100);
+    }
+    i++;
+
 }
 
 void CUsbtestDlg::OnRButtonUp(UINT_PTR id, CPoint pt)
 {
-    DWORD lenBytes = 0;
-    static unsigned int i = 0;
-    unsigned char cmd1[] = { 85, 170, 3, 4, 5, 6 };
-    unsigned char cmd2[] = { 170, 85, 3, 4, 5, 6 };
-
-    SendPacket(devID, i % 2 ? cmd1 : cmd2, 6);
+    static unsigned int i = 1;
+    if (i % 2)
+        StartDevice(devID);
+    else
+        StopDevice(devID);
 
     i++;
 }
 
-void CUsbtestDlg::OnBnClickedExit()
+void CUsbtestDlg::OnClose()
 {
-    // TODO: 在此添加控件通知处理程序代码
+    StopDevice(devID);
+    Sleep(5);
+    SendCommand(devID, CMD_SET_TRIG_MODE, 0);
+    Sleep(5);
     ::PostQuitMessage(0);
 }
 
@@ -141,11 +162,9 @@ HCURSOR CUsbtestDlg::OnQueryDragIcon()
 	return static_cast<HCURSOR>(m_hIcon);
 }
 
-
-
 void CUsbtestDlg::ShowWave(CPaintDC& dc, RECT& rc)
 {
-    if (!m_pBuffer)
+    if (!m_buffer)
         return;
 
 
@@ -164,10 +183,8 @@ void CUsbtestDlg::ShowWave(CPaintDC& dc, RECT& rc)
     rect.left = rc.left + 2;
     rect.right = rc.right - 2;
 
-    //memDC.Rectangle(&rect);
-
-    unsigned char* waveData = m_pBuffer->address;
-    int len = m_pBuffer->waveSize;
+    unsigned char* waveData = m_buffer;
+    int len = waveSize/5;
 
     double step = (double)(rect.right - rect.left) / len;
     double scale = (double)(rect.bottom - rect.top) / (double)255;
@@ -201,28 +218,25 @@ DWORD CUsbtestDlg::WaitWaveProc()
             continue;
         }
 
-        PWAVBUFFER pBuffer = NULL;
-        if (DEVCTRL_SUCCESS != WaitWavePacket(devID, &pBuffer, 30000))
+        unsigned char* buffer = NULL;
+        if (DEVCTRL_SUCCESS != WaitWavePacket(devID, &buffer, 30000))
         {
             Sleep(0);
             continue;
         }
 
-        if (pBuffer)
-            PostMessage(0x1000, (WPARAM)pBuffer, NULL);
+        AddBuffer(devID, m_buffer, waveSize*waveCount);
+
+
+        if (buffer)
+        {
+            m_buffer = buffer;
+            curNo++;
+
+            Invalidate();
+            UpdateWindow();
+        }
     }
-
-    return 0;
-}
-
-LRESULT CUsbtestDlg::OnWavePacket(WPARAM wParam, LPARAM lParam)
-{
-    m_pBuffer = (PWAVBUFFER)wParam;
-    curNo++;
-
-    Invalidate();
-    UpdateWindow();
-    ReleasePacket(devID, m_pBuffer);
 
     return 0;
 }

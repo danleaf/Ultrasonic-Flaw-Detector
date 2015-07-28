@@ -10,19 +10,26 @@
 #define DEVCTRL_API __declspec(dllimport)
 #endif
 
+#ifndef __DEVCTRL_H__
+#define __DEVCTRL_H__
+
 #define DEVCTRL_SUCCESS 0
+#define CMD_START_RUN 1
+#define CMD_STOP_RUN 2
+#define CMD_SET_TRIG_MODE 3         //参数0表示内部触发，1表示外部触发
+#define CMD_SET_TRIG_EDGE 4         //参数0表示上升沿，1表示下降沿
+#define CMD_SET_TRIG_FREQU 5        //参数低16位表示频率，单位HZ，高16位表示正脉宽，单位ns,脉宽取0表示不改变脉宽，默认值是1us
+#define CMD_SET_WAVE_SIZE 6         //参数低16位表示原始采集大小，高16位表示压缩比
 
-typedef struct __WaveBuffer
-{
-    unsigned char* address;
-    unsigned int waveSize;
-    unsigned int waveCount;
-}WAVBUFFER,*PWAVBUFFER;
+DEVCTRL_API int  __stdcall EnumerateDevices(int *devIDs, int* devCount);
+DEVCTRL_API int  __stdcall SetWaveParam(int devID, int waveRawSize, int waveRate);
+DEVCTRL_API int  __stdcall StartDevice(int devID);
+DEVCTRL_API int  __stdcall StopDevice(int devID);
+DEVCTRL_API int  __stdcall WaitWavePacket(int devID, unsigned char** pBuffer, unsigned int timeout);
+DEVCTRL_API int  __stdcall SendData(int devID, unsigned char* buffer, int len);
+DEVCTRL_API int  __stdcall AddBuffer(int devID, unsigned char* buffer, int length);
+DEVCTRL_API int  __stdcall SendCommand(int devID, unsigned short cmd, unsigned int param);
+DEVCTRL_API int  __stdcall DeleteAllBuffer(int devID);
 
-DEVCTRL_API int  __stdcall EnumerateDevices(int *devIDs, int *devCount);
-DEVCTRL_API int  __stdcall SetWaveAndBufferParam(int uDevID, int waveRawSize, int waveRate, int bufCount, int waveCount);
-DEVCTRL_API int  __stdcall StartDevice(int uDevID);
-DEVCTRL_API int  __stdcall StopDevice(int uDevID);
-DEVCTRL_API int  __stdcall WaitWavePacket(int uDevID, PWAVBUFFER* pBuffer, unsigned int timeout);
-DEVCTRL_API int  __stdcall SendPacket(int uDevID, unsigned char* buffer, int len);
-DEVCTRL_API int  __stdcall ReleasePacket(int uDevID, PWAVBUFFER pBuffer);
+
+#endif

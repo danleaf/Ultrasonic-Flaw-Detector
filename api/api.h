@@ -10,6 +10,14 @@
 #define API_API __declspec(dllimport)
 #endif
 
+#define IPSCAN_SUCCESS 0
 
-API_API HANDLE IPScanGetDeviceBySystemID(U32 systemId, U32 deviceId);
-API_API RETCODE IPScanSendData(U32 deviceId, PBUFFER buffer);
+
+API_API HANDLE  __stdcall IPScanGetDeviceBySystemID(U32 systemId, U32 deviceId);
+API_API RETCODE __stdcall IPScanEnumerateDevices(HANDLE* hDevices, U32* uDeviceCount);
+API_API RETCODE __stdcall IPScanSendData(HANDLE hDevice, void* pBuffer, U32 uLength);
+API_API RETCODE __stdcall IPScanSendCommand(HANDLE  hDevice, U16 cmd, U32 param);
+API_API RETCODE __stdcall IPScanAlazarPostAsyncBuffer(HANDLE hDevice, void* buffer, U32 uBufferLength);
+API_API RETCODE __stdcall IPScanAlazarWaitAsyncBufferComplete(HANDLE hDevice, void** pBuffer, U32 uTimeout);
+API_API RETCODE __stdcall IPScanStartCapture(HANDLE  hDevice);
+API_API RETCODE __stdcall IPScanAbortAsyncRead(HANDLE  hDevice);

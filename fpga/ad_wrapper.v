@@ -4,7 +4,7 @@ module ad_wrapper
 )
 (	
     input i_ad_clk,i_rd_clk,i_rst_n,
-	 input i_st,i_auto,i_stout,   
+	 input i_st,i_isout,i_stout,   
 	 input [15:0] i_recv_count,
     input [AD_DATA_SIZE-1:0] i_ad_data,
     output [AD_DATA_SIZE*2-1:0] o_dual_data,
@@ -21,7 +21,7 @@ module ad_wrapper
 	wire start,we_fifo,working;
 	reg st0,st1,st,working0;
 	
-	assign start = i_auto ? i_stout : i_st;
+	assign start = i_isout ? i_stout : i_st;
 	assign o_working = working;
 	
 	initial

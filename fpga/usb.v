@@ -4,10 +4,12 @@ module usb
 	input i_clk_sys,
 	input i_clk_usb,
 	input i_wr,
+	input i_cmd_finish,					//async
+	input [15:0] i_cmd_finish_code,
 	input [15:0] i_wr_data,
 	output o_full,
 	output reg o_cmd_come,
-	output reg [7:0] o_cmd,
+	output reg [15:0] o_cmd,
 	output reg [31:0] o_cmd_param,
 	
 	//connect with USB chip
@@ -22,21 +24,30 @@ module usb
 	output reg o_slpked
 );
 
-	localparam ST_IDEL = 8'd1;
-	localparam ST_RD_BUF = 8'd2;
-	localparam ST_WRITE = 8'd4;
-	localparam ST_FULL_WAIT = 8'd8;
-	localparam ST_FULL_END = 8'd16;
-	localparam ST_WRITE_END = 8'd32;
-	localparam ST_PREP_RX = 8'd64;
-	localparam ST_PREP_CMD = 8'd128;
+	localparam ST_IDEL = 10'd1;
+	localparam ST_RD_BUF = 10'd2;
+	localparam ST_WRITE = 10'd4;
+	localparam ST_FULL_WAIT = 10'd8;
+	localparam ST_FULL_END = 10'd16;
+	localparam ST_WRITE_END = 10'd32;
+	localparam ST_PREP_RX = 10'd64;
+	localparam ST_PREP_CMD = 10'd128;
+	localparam ST_RSP_CMD = 10'd256;
+	localparam ST_RSP_CMD_END = 10'd512;
 	
 	wire empty;
-	reg rd,slwr;
-	reg [13:0] urdcnt;
 	wire [15:0] buf_out;
-	reg [15:0] cmdcache[0:2];
-	reg [1:0] ccidx;
+	
+	reg rd,slwr;
+	reg [9:0] state;
+	reg [3:0] empcnt;
+	reg [15:0] cmdcache[0:3];
+	reg [15:0] cmdrspcache[0:1];
+	reg [15:0] cmd_rsp;
+	reg [2:0] ccidx;
+	reg wait_cmd_finish;
+	reg cmd_finish,_cmd_finish,__cmd_finish;
+	reg cmdrsp_idx;
 	
 	assign o_slcs  = 1'b0;
 	assign o_addr0 = 1'b0;
@@ -54,10 +65,16 @@ module usb
 		.full(o_full), 
 		.empty(empty));
 	
-	reg [7:0] state;
-	reg [3:0] empcnt;
 	
-	assign io_data = (state != ST_PREP_RX) ? buf_out : {16{1'bz}};
+	assign io_data = (state == ST_RSP_CMD) ? cmd_rsp : ((state != ST_PREP_RX) ? buf_out : {16{1'bz}});
+	
+	
+	always @(posedge i_clk_usb or negedge i_rst_n)
+	if(!i_rst_n)
+		{_cmd_finish,__cmd_finish} <= 0;
+	else
+		{_cmd_finish,__cmd_finish} <= {__cmd_finish, i_cmd_finish};
+	
 	
 	always @(posedge i_clk_usb or negedge i_rst_n)
 	if(!i_rst_n)
@@ -67,7 +84,6 @@ module usb
 		state <= ST_IDEL;
 		o_slpked <= 1'd1;
 		empcnt <= 0;
-		urdcnt <= 0;
 		o_addr1 <= 1'b1;
 		o_sloe <= 'b1;
 		o_slrd <= 1'b1;
@@ -78,72 +94,41 @@ module usb
 		cmdcache[0] <= 0;
 		cmdcache[1] <= 0;
 		cmdcache[2] <= 0;
+		cmdcache[3] <= 0;
+		wait_cmd_finish <= 0;
+		cmdrsp_idx <= 0;
+		cmd_finish <= 0;
 	end
 	else
-	begin
-		if(state != ST_IDEL)
-			urdcnt <= &urdcnt ? urdcnt : urdcnt + 1'd1;
-			
-		if(state != ST_PREP_CMD)
-			o_cmd_come <= 0;
+	begin		
+		if(!_cmd_finish & __cmd_finish)
+			cmd_finish <= 1'd1;
 			
 		case(state)
 		ST_IDEL:
+		if(wait_cmd_finish & cmd_finish & i_flagb)
 		begin
-			if(&urdcnt & i_flagc)
-			begin
-				urdcnt <= 0;
-				o_addr1 <= 0;
-				o_sloe <= 0;
-				o_slrd <= 0;
-				state <= ST_PREP_RX;
-			end
-			else
-			begin
-				urdcnt <= urdcnt + 1'd1;			
-			
-				if(!empty & i_flagb)
-				begin
-					rd <= 1'd1;
-					state <= ST_RD_BUF;
-				end
-			end
+			cmd_finish <= 0;
+			state <= ST_RSP_CMD;
+			cmdrspcache[0] <= o_cmd;
+			cmdrspcache[1] <= i_cmd_finish_code;
 		end
-		
-		ST_PREP_RX:
-		if(!i_flagc)
+		else if(!wait_cmd_finish & 
+					i_flagc)
 		begin
-			o_addr1 <= 1'b1;
-			o_sloe <= 1'b1;
-			o_slrd <= 1'b1;
-			ccidx <= 0;
-			state <= ST_IDEL;
+			o_addr1 <= 0;
+			o_sloe <= 0;
+			o_slrd <= 0;
+			state <= ST_PREP_RX;
 		end
 		else
-		begin
-			ccidx <= ccidx + 1'd1;
-			cmdcache[ccidx] <= io_data;
-			if(ccidx == 2'd2)
+		begin			
+			if(!empty & i_flagb)
 			begin
-				o_addr1 <= 1'b1;
-				o_sloe <= 1'b1;
-				o_slrd <= 1'b1;
-				ccidx <= 0;
-				state <= ST_PREP_CMD;
+				rd <= 1'd1;
+				state <= ST_RD_BUF;
 			end
-		end
-		
-		ST_PREP_CMD:
-		begin
-			if(cmdcache[0][15:8] == ~cmdcache[0][7:0])
-			begin
-				o_cmd_come <= 1'd1;
-				o_cmd <= cmdcache[0][7:0];
-				o_cmd_param <= {cmdcache[1],cmdcache[2]};
-			end
-			state <= ST_IDEL;
-		end
-		
+		end		
 		
 		ST_RD_BUF:
 		begin
@@ -223,11 +208,66 @@ module usb
 				empcnt <= empcnt + 1'd1;
 		end
 		
+		ST_PREP_RX:
+		if(!i_flagc)
+		begin
+			o_addr1 <= 1'b1;
+			o_sloe <= 1'b1;
+			o_slrd <= 1'b1;
+			ccidx <= 0;
+			state <= ST_PREP_CMD;
+		end
+		else
+		begin
+			o_cmd_come <= 0;
+			ccidx <= (ccidx == 3'd4) ? 3'd4 : ccidx + 1'd1;
+			
+			if(ccidx != 3'd4)
+				cmdcache[ccidx] <= io_data;
+		end
+		
+		ST_PREP_CMD:
+		begin
+			if(cmdcache[0] == ~cmdcache[1])
+			begin
+				o_cmd_come <= 1'd1;
+				o_cmd <= cmdcache[0];
+				o_cmd_param <= {cmdcache[3],cmdcache[2]};
+			end
+			state <= ST_IDEL;
+			wait_cmd_finish <= 1'd1;
+		end
+		
+		ST_RSP_CMD:
+		begin
+			slwr <= 0;
+			if(i_flagb)
+			begin
+				cmdrsp_idx <= ~cmdrsp_idx;
+				cmd_rsp <= cmdrspcache[cmdrsp_idx];
+				if(cmdrsp_idx)
+					state <= ST_RSP_CMD_END;
+			end
+		end
+		
+		ST_RSP_CMD_END:
+		begin
+			slwr <= 1'b1;
+			wait_cmd_finish <= 0;
+			cmdrsp_idx <= ~cmdrsp_idx;
+			if(!cmdrsp_idx)
+				o_slpked <= 1'd0;
+			else
+			begin
+				o_slpked <= 1'd1;
+				state <= ST_IDEL;
+			end
+		end
+		
 		default:
 			state <= ST_IDEL;
 		endcase
 	end
-	
 	/*always @(posedge i_clk_usb or negedge i_rst_n)
 	if(!i_rst_n)
 	begin

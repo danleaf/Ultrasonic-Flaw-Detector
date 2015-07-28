@@ -42,10 +42,41 @@ module top0
 	assign o_clk_ad		= clk_ad_180M;
 	assign o_clk_da 		= i_clk50M;
 
+	
+	wire run,outmode,outnegedge;
+	wire cmd_finish;
+	wire [15:0] waveRawSize;
+	wire [2:0] waveRate;
+	wire [19:0] cycle;
+	wire [11:0] pulse;
+	wire [15:0] cmd_finish_code;
+	
+	cmdproc cmdproc_inst(
+		.i_clk(clk_sys_100M),
+		.i_rst_n(i_rst_n),
+		.i_cmd_come(cmd_come),
+		.i_cmd(cmd),				
+		.i_cmd_param(cmd_param),
+		.o_run(run),		
+		.o_outmode(outmode),
+		.o_outnegedge(outnegedge),
+		.o_waveRawSize(waveRawSize),
+		.o_waveRate(waveRate),
+		.o_cycle(cycle),
+		.o_pulse(pulse),
+		.o_finish(cmd_finish),
+		.o_finish_code(cmd_finish_code)
+	);
+	
+	
+	
 	wire trig;
 	triger trig_inst(
-		.clk(i_clk50M), 
+		.clk(clk_sys_100M), 
 		.rst_n(i_rst_n), 
+		.en(run & !outmode),
+		.cycle(cycle),	
+		.pulse(pulse),	
 		.q(trig), 
 		.q2(o_trig),
 		.led(/*o_led*/),
@@ -56,26 +87,25 @@ module top0
 	wire ad_rd_empty;
 	
 	reg [7:0] ii_ad_data;
-	reg [1:0] trigcnt;
-	reg _trig;
+	reg _trig,__trig;
 	
 	always@(posedge clk_ad_180M or negedge i_rst_n)
 	if(!i_rst_n)
 	begin
 		ii_ad_data <= 0;
 		_trig <= 0;
-		trigcnt <= 0;
+		__trig <= 0;
 	end
 	else
 	begin
-		_trig <= o_trig;
-		if(!_trig & o_trig)
+		__trig <= trig;
+		_trig <= __trig;
+		if(!_trig & __trig)
 		begin
-			ii_ad_data <= 'd0;//252;
-			trigcnt <= (trigcnt == 'd1) ? 'd1 : trigcnt + 1'd1;
+			ii_ad_data <= 'd248;
 		end
 		else
-			ii_ad_data <= /*(ii_ad_data == 'd10) ? 0 : */ii_ad_data + 1'd1;
+			ii_ad_data <= (ii_ad_data == 'd99) ? 0 : ii_ad_data + 1'd1;
 	end
 	
 	
@@ -87,17 +117,21 @@ module top0
 		 .i_ad_data(ii_ad_data),	 
 		 .o_dual_data(ad_dual_data),
 		 .i_st(trig),
-		 .i_auto(1'b0),
-		 .i_stout(1'b0),
+		 .i_isout(outmode),
+		 .i_stout(outnegedge ? ~i_trig : i_trig),
 		 .o_rd_empty(ad_rd_empty),
 		 .o_ad_open(),
-		 .i_recv_count(16'd10000),
+		 .i_recv_count(waveRawSize),
 		 .o_working()
 	);
 	
 	wire full;
-	wire [3:0] nouse;
-	wire [31:0] param;
+	wire [11:0] nouse;
+	wire [31:0] cmd_param;
+	wire cmd_come;
+	wire [15:0] cmd;
+	
+	assign o_led = cmd[3:0];
 	
 	
 	usb uu(
@@ -106,9 +140,11 @@ module top0
 		.i_clk_usb(clk_usb_48M),
 		.i_wr(!ad_rd_empty),
 		.i_wr_data(ad_dual_data),
-		.o_cmd_come(),
-		.o_cmd({nouse,o_led}),
-		.o_cmd_param(param),
+		.o_cmd(cmd),
+		.o_cmd_come(cmd_come),
+		.o_cmd_param(cmd_param),
+		.i_cmd_finish(cmd_finish),
+		.i_cmd_finish_code(cmd_finish_code),
 		.o_full(),
 		.i_flagb(i_usb_flagb),
 		.i_flagc(i_usb_flagc),
@@ -121,7 +157,6 @@ module top0
 		.o_slwr(o_usb_slwr),
 		.o_slpked(o_usb_slpked)
 	);
-	
 	
 
 endmodule

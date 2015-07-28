@@ -6,6 +6,9 @@ MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "fpga", "fpga\fpga.vcxproj", "{51D4A509-71D6-4F85-A5B3-611269145195}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "api", "api\api.vcxproj", "{85836A80-5D1A-4600-B316-BBCA6975B163}"
+	ProjectSection(ProjectDependencies) = postProject
+		{57A2A34D-2AE9-4EE3-8693-CCFDD9C2682B} = {57A2A34D-2AE9-4EE3-8693-CCFDD9C2682B}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "devctrl", "devctrl\devctrl.vcxproj", "{57A2A34D-2AE9-4EE3-8693-CCFDD9C2682B}"
 EndProject
