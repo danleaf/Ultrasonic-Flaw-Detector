@@ -74,6 +74,7 @@
     <None Include="ad_wrapper.v" />
     <None Include="altdualram.v" />
     <None Include="checksum.v" />
+    <None Include="cmdproc.v" />
     <None Include="cntt.v" />
     <None Include="counter.v" />
     <None Include="crc.v" />
