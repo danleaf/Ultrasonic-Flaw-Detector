@@ -42,12 +42,13 @@ module usb
 	reg [9:0] state;
 	reg [3:0] empcnt;
 	reg [15:0] cmdcache[0:3];
-	reg [15:0] cmdrspcache[0:1];
+	reg [15:0] cmdrspcache[0:2];
 	reg [15:0] cmd_rsp;
 	reg [2:0] ccidx;
 	reg wait_cmd_finish;
 	reg cmd_finish,_cmd_finish,__cmd_finish;
-	reg cmdrsp_idx;
+	reg [1:0] cmdrsp_idx;
+	reg rspendsig;
 	
 	assign o_slcs  = 1'b0;
 	assign o_addr0 = 1'b0;
@@ -66,7 +67,7 @@ module usb
 		.empty(empty));
 	
 	
-	assign io_data = (state == ST_RSP_CMD) ? cmd_rsp : ((state != ST_PREP_RX) ? buf_out : {16{1'bz}});
+	assign io_data = (state == ST_RSP_CMD || state == ST_RSP_CMD_END) ? cmd_rsp : ((state != ST_PREP_RX) ? buf_out : {16{1'bz}});
 	
 	
 	always @(posedge i_clk_usb or negedge i_rst_n)
@@ -98,6 +99,7 @@ module usb
 		wait_cmd_finish <= 0;
 		cmdrsp_idx <= 0;
 		cmd_finish <= 0;
+		rspendsig <= 0;
 	end
 	else
 	begin		
@@ -111,7 +113,8 @@ module usb
 			cmd_finish <= 0;
 			state <= ST_RSP_CMD;
 			cmdrspcache[0] <= o_cmd;
-			cmdrspcache[1] <= i_cmd_finish_code;
+			cmdrspcache[1] <= ~o_cmd;
+			cmdrspcache[2] <= i_cmd_finish_code;
 		end
 		else if(!wait_cmd_finish & 
 					i_flagc)
@@ -243,19 +246,20 @@ module usb
 			slwr <= 0;
 			if(i_flagb)
 			begin
-				cmdrsp_idx <= ~cmdrsp_idx;
+				cmdrsp_idx <= cmdrsp_idx + 1'd1;
 				cmd_rsp <= cmdrspcache[cmdrsp_idx];
-				if(cmdrsp_idx)
+				if(cmdrsp_idx == 2'd2)
 					state <= ST_RSP_CMD_END;
 			end
 		end
 		
 		ST_RSP_CMD_END:
 		begin
+			cmdrsp_idx <= 0;
 			slwr <= 1'b1;
 			wait_cmd_finish <= 0;
-			cmdrsp_idx <= ~cmdrsp_idx;
-			if(!cmdrsp_idx)
+			rspendsig <= ~rspendsig;
+			if(!rspendsig)
 				o_slpked <= 1'd0;
 			else
 			begin
@@ -268,73 +272,5 @@ module usb
 			state <= ST_IDEL;
 		endcase
 	end
-	/*always @(posedge i_clk_usb or negedge i_rst_n)
-	if(!i_rst_n)
-	begin
-		o_slpked <= 'd1;
-		empcnt <= 'd15;
-	end
-	else
-	begin
-		if(empty)
-			empcnt <= (empcnt == 'd15) ? 'd15 : empcnt + 'd1;
-		else
-			empcnt <= 0;
-			
-		if(empcnt == 'd12)
-			o_slpked <= 'd0;
-		else if(empcnt == 'd14 || empcnt == 0)
-			o_slpked <= 'd1;
-	end*/
-	
-	/*reg	[1:0]	STATE;
-
-	parameter  	IDLE='H0,
-			WRITE_READY='H1,
-			WRITE='H2;
-	
-	assign o_slcs  = 1'b0;
-	assign o_addr0 = 1'b0;
-	assign o_addr1 = 1'b1;
-	assign o_slrd = 1'b1;
-	assign o_sloe = 1'b1;
-	assign o_slpked = slpked;
-	assign o_slwr = u_slwr;
-	assign io_data = i_wr_data;//{8'd0,i_ad_data};
-	
-	reg     u_slwr;
-	
-	always @(posedge i_clk_usb or negedge i_rst_n)
-	begin
-	if(!i_rst_n)
-		begin
-		u_slwr<='b1;
-		STATE<=IDLE;
-		end
-	else
-		begin	
-		case(STATE)
-		IDLE:
-			begin
-			STATE<=WRITE;
-			end
-		WRITE:
-			begin
-			if(i_flagb)
-				begin
-				u_slwr <= empty ? 'b0 : 'b0;
-				STATE <= WRITE;
-				end
-			else
-				begin
-				u_slwr<='b1;
-				STATE<=IDLE;
-				end
-			end
-		default:
-			STATE<=IDLE;
-		endcase
-		end
-	end*/
 
 endmodule

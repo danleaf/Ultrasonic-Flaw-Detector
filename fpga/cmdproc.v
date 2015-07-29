@@ -11,8 +11,10 @@ module cmdproc
 	output reg [11:0] o_pulse,			//the unit is 10ns
 	
 	output reg o_finish,
-	output reg [15:0] o_finish_code
+	output [15:0] o_finish_code
 );
+
+	assign o_finish_code = 0;
 
 	localparam ST_IDEL = 8'd1;
 	localparam ST_PROC = 8'd2;
@@ -48,9 +50,9 @@ module cmdproc
 		o_outnegedge <= 0;
 		o_waveRawSize <= 16'd128;
 		o_waveRate <= 3'd1;
-		o_cycle <= 20'd100000;
+		o_cycle <= 20'd1000000;
 		o_pulse <= 12'd100;
-		o_finish_code <= 0;
+		//o_finish_code <= 0;
 	end
 	else
 	case(state)			

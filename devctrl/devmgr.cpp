@@ -28,7 +28,10 @@ CDeviceManager::CDeviceManager(const UFD_DEVINFO& dev)
     m_cache = new unsigned char[CACHE_SIZE];
     m_hPacketEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
     m_mtxBufferList = CreateMutex(NULL, FALSE, NULL);
-    inOvLap.hEvent = CreateEvent(NULL, false, false, TEXT("CYUSB_IN"));
+    m_mtxSendCommand = CreateMutex(NULL, FALSE, NULL);
+    m_evtCommandRsp = CreateEvent(NULL, FALSE, FALSE, NULL);
+    m_curCmd = 0;
+    m_curCmdRsp = 0;
 
     m_hThread = CreateThread(NULL, 0, ::ReceivDataProc, this, CREATE_SUSPENDED, &m_dwThreadID);
     SetThreadPriority(m_hThread, THREAD_PRIORITY_TIME_CRITICAL);
@@ -143,13 +146,26 @@ DWORD CDeviceManager::ReceiveDataProc()
         else
             len = ReceiveDataEth();
 
-        if (len < 0)
+        if (len < 6)
         {
             continue;
         }
 
         if (len < 10)
         {
+            unsigned short cmd = ((unsigned short*)m_cache)[0];
+            unsigned short cmd_ = ~((unsigned short*)m_cache)[1];
+            unsigned short rsp = ((unsigned short*)m_cache)[2];
+
+            if (cmd == cmd_)
+            {
+                if (cmd == m_curCmd)
+                {
+                    m_curCmdRsp = rsp;
+                    SetEvent(m_evtCommandRsp);
+                }
+            }
+
             continue;
         }
 
@@ -210,9 +226,29 @@ int CDeviceManager::ReceiveDataEth()
 
 int CDeviceManager::SendCommand(unsigned short cmd, unsigned int param)
 {
+    WaitForSingleObject(m_mtxSendCommand, INFINITE);
+
+    m_curCmd = cmd;
+
     unsigned short cmdl[] = { cmd, ~cmd, LOWORD(param), HIWORD(param) };
 
-    return SendData((unsigned char*)cmdl, 8);
+    int ret = SendData((unsigned char*)cmdl, 8);
+
+    if (DEVCTRL_SUCCESS == ret)
+    {
+        DWORD rsp = WaitForSingleObject(m_evtCommandRsp, 1000);
+        if (WAIT_TIMEOUT == rsp)
+            ret = -1;
+        ret = m_curCmdRsp;
+
+        //若返回值不为零说明失败，将其设为负值
+        if (DEVCTRL_SUCCESS != ret)
+            ret |= 0x80000000;
+    }
+
+    ReleaseMutex(m_mtxSendCommand);
+
+    return ret;
 }
 
 int CDeviceManager::SendData(unsigned char* buffer, int len)
@@ -227,12 +263,12 @@ int CDeviceManager::SendDataUSB(unsigned char* buffer, int len)
 {
     LONG lenBytes = len;
 
-    bool ret = m_device.usbDev.outEndPoint->XferData(buffer, lenBytes, NULL, true);
+    bool ret = m_device.usbDev.outEndPoint->XferData(buffer, lenBytes);
 
     if (!ret)
         return -1;
 
-    return lenBytes;
+    return 0;
 }
 
 int CDeviceManager::SendDataEth(unsigned char* buffer, int len)

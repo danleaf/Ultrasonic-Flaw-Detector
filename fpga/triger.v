@@ -26,10 +26,10 @@ module triger(
 	
 	assign q = s;
 	assign q2 = delay[0];
-	//assign dac_data = data;
+	assign dac_data = data;
 	
 	reg [9:0] sinaddr;
-	sindata sin(sinaddr,clk,dac_data);
+	//sindata sin(sinaddr,clk,dac_data);
 	
 	
 	always@(posedge clk or negedge rst_n)

@@ -96,7 +96,7 @@ module plladusb1 (
 		altpll_component.bandwidth_type = "AUTO",
 		altpll_component.clk0_divide_by = 5,
 		altpll_component.clk0_duty_cycle = 50,
-		altpll_component.clk0_multiply_by = 18,
+		altpll_component.clk0_multiply_by = 3,
 		altpll_component.clk0_phase_shift = "0",
 		altpll_component.clk1_divide_by = 5,
 		altpll_component.clk1_duty_cycle = 50,

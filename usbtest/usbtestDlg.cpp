@@ -69,7 +69,7 @@ BOOL CUsbtestDlg::OnInitDialog()
         PostQuitMessage(-1);
     }
 
-    waveSize = 512;
+    waveSize = 4000;
     waveCount = 10;
 
     SetWaveParam(devID, waveSize, 1);
@@ -149,9 +149,7 @@ void CUsbtestDlg::OnRButtonUp(UINT_PTR id, CPoint pt)
 void CUsbtestDlg::OnClose()
 {
     StopDevice(devID);
-    Sleep(5);
     SendCommand(devID, CMD_SET_TRIG_MODE, 0);
-    Sleep(5);
     ::PostQuitMessage(0);
 }
 

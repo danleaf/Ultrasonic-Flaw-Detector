@@ -12,8 +12,6 @@ class CDeviceManager
     HANDLE      m_mtxBufferList;
     volatile long m_bufferUsed;
 
-    OVERLAPPED inOvLap;
-
     HANDLE          m_hPacketEvent;
     unsigned char*  m_pktBuffer;
 
@@ -28,6 +26,10 @@ class CDeviceManager
     int     m_bufferWaveCount;   //一个缓冲区中波形的数量
     int     m_bufferCount;       //缓冲区数量
 
+    HANDLE  m_mtxSendCommand;
+    HANDLE  m_evtCommandRsp;
+    unsigned short m_curCmd;
+    unsigned short m_curCmdRsp;
 
     static map<int, CDeviceManager*> devmgrs;
 
