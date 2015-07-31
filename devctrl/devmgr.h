@@ -39,6 +39,7 @@ public:
     static void EnumerateDevices();
     static void EnumerateDevices(list<int>& devIDs);
     static CDeviceManager* GetManagerByDeviceID(int devID);
+    static void LoadHexToRam(CCyUSBDevice* dev, bool bLow = true);
 
 public:
     int GetDeviceID();

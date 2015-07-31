@@ -7,8 +7,7 @@ BOOL APIENTRY DllMain( HMODULE hModule,
                        LPVOID lpReserved
 					 )
 {
-    if (SetPriorityClass(GetCurrentProcess(), REALTIME_PRIORITY_CLASS))
-        CDeviceManager::EnumerateDevices();
+    SetPriorityClass(GetCurrentProcess(), REALTIME_PRIORITY_CLASS);
 
 	switch (ul_reason_for_call)
 	{

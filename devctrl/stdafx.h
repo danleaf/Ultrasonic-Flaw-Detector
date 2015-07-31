@@ -16,6 +16,7 @@
 #include "types.h"
 #include <map>
 #include <list>
+#include <string>
 #include <winioctl.h>
 #include <assert.h>
 
