@@ -33,6 +33,8 @@ slavefifo
 *.jdi
 *.lib
 *.dll
+*.zip
+*.rar
 
 # Build results
 
