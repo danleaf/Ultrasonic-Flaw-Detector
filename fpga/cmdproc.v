@@ -9,7 +9,10 @@ module cmdproc
 	output reg [2:0] o_waveRate,
 	output reg [19:0] o_cycle,			//the unit is 10ns
 	output reg [11:0] o_pulse,			//the unit is 10ns
-	
+	output reg [15:0] o_outdelay,		//the unit is 10ns
+	output reg [15:0] o_wavedelay,	//the unit is 10ns
+	output reg [7:0] o_gaindata,
+	output reg o_test,
 	output reg o_finish,
 	output [15:0] o_finish_code
 );
@@ -26,6 +29,10 @@ module cmdproc
 	localparam CMD_SET_TRIG_EDGE = 16'd4;
 	localparam CMD_SET_TRIG_FREQU = 16'd5;
 	localparam CMD_SET_WAVE_SIZE = 16'd6;
+	localparam CMD_SET_OUTTRIG_DELAY = 16'd7;
+	localparam CMD_SET_TRIGWAVE_DELAY = 16'd8;
+	localparam CMD_SET_TEST = 16'd9;
+	localparam CMD_SET_GAIN = 16'd10;
 	
 	reg cmd_come, _cmd_come;
 	reg [15:0] cmd;
@@ -34,8 +41,8 @@ module cmdproc
 	always @(posedge i_clk or negedge i_rst_n)
 	if(!i_rst_n)
 	begin
-		_cmd_come <= 0;
-		cmd_come <= 0;
+		_cmd_come <= 1'b1;
+		cmd_come <= 1'b1;
 	end
 	else
 	begin
@@ -52,6 +59,10 @@ module cmdproc
 		o_waveRate <= 3'd1;
 		o_cycle <= 20'd1000000;
 		o_pulse <= 12'd100;
+		o_outdelay <= 0;
+		o_wavedelay <= 0;
+		o_test <= 0;
+		o_gaindata <= 8'd100;
 		//o_finish_code <= 0;
 	end
 	else
@@ -75,6 +86,14 @@ module cmdproc
 					o_pulse <= param[31:16] / 10;
 				o_cycle <= 100000000	/ param[15:0];	
 			end
+			CMD_SET_OUTTRIG_DELAY:
+				o_outdelay <= param[15:0];
+			CMD_SET_TRIGWAVE_DELAY:
+				o_wavedelay <= param[15:0];
+			CMD_SET_GAIN:
+				o_gaindata <= param[7:0];
+			CMD_SET_TEST:
+				o_test <= param[0];
 			endcase
 		end
 			

@@ -20,11 +20,18 @@
 #define CMD_SET_TRIG_EDGE 4         //参数0表示上升沿，1表示下降沿
 #define CMD_SET_TRIG_FREQU 5        //参数低16位表示频率，单位HZ，高16位表示正脉宽，单位ns,脉宽取0表示不改变脉宽，默认值是1us
 #define CMD_SET_WAVE_SIZE 6         //参数低16位表示原始采集大小，高16位表示压缩比
+#define CMD_SET_OUTTRIG_DELAY 7     //设置外部触发延时，参数单位10ns
+#define CMD_SET_TRIGWAVE_DELAY 8    //设置从触发AD采集到激发超声波的延时，参数单位10ns
+#define CMD_SET_TEST 9              
+#define CMD_SET_GAIN 10
+
 
 DEVCTRL_API int  __stdcall EnumerateDevices(int *devIDs, int* devCount);
 DEVCTRL_API int  __stdcall SetWaveParam(int devID, int waveRawSize, int waveRate);
 DEVCTRL_API int  __stdcall StartDevice(int devID);
 DEVCTRL_API int  __stdcall StopDevice(int devID);
+DEVCTRL_API int  __stdcall StartCapture(int devID);
+DEVCTRL_API int  __stdcall StopCapture(int devID);
 DEVCTRL_API int  __stdcall WaitWavePacket(int devID, unsigned char** pBuffer, unsigned int timeout);
 DEVCTRL_API int  __stdcall SendData(int devID, unsigned char* buffer, int len);
 DEVCTRL_API int  __stdcall AddBuffer(int devID, unsigned char* buffer, int length);

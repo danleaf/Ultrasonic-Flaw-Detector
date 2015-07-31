@@ -72,7 +72,7 @@ module usb
 	
 	always @(posedge i_clk_usb or negedge i_rst_n)
 	if(!i_rst_n)
-		{_cmd_finish,__cmd_finish} <= 0;
+		{_cmd_finish,__cmd_finish} <= 2'b11;
 	else
 		{_cmd_finish,__cmd_finish} <= {__cmd_finish, i_cmd_finish};
 	
@@ -236,9 +236,9 @@ module usb
 				o_cmd_come <= 1'd1;
 				o_cmd <= cmdcache[0];
 				o_cmd_param <= {cmdcache[3],cmdcache[2]};
+				wait_cmd_finish <= 1'd1;
 			end
 			state <= ST_IDEL;
-			wait_cmd_finish <= 1'd1;
 		end
 		
 		ST_RSP_CMD:

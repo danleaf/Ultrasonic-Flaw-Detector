@@ -85,11 +85,13 @@
     <None Include="eth_commu.v" />
     <None Include="eth_session.v" />
     <None Include="fifo.v" />
+    <None Include="gain.v" />
     <None Include="inc.v" />
     <None Include="indififo.v" />
     <None Include="ip.v" />
     <None Include="mac.v" />
     <None Include="NUMSHOW.v" />
+    <None Include="outtriger.v" />
     <None Include="packet.v" />
     <None Include="pins.csv" />
     <None Include="pins2.csv" />
@@ -112,6 +114,7 @@
     <None Include="top.v" />
     <None Include="top0.v" />
     <None Include="triger.v" />
+    <None Include="trigwave.v" />
     <None Include="udp.v" />
     <None Include="ufd.csv" />
     <None Include="ufd.pin" />

@@ -31,6 +31,8 @@ class CDeviceManager
     unsigned short m_curCmd;
     unsigned short m_curCmdRsp;
 
+    volatile long m_aboradCapture;
+
     static map<int, CDeviceManager*> devmgrs;
 
 public:
@@ -56,6 +58,8 @@ public:
 
     int    StartDevice();
     int    StopDevice();
+    int    StartCapture();
+    int    StopCapture();
     int    WaitWavePacket(unsigned char** pBuffer, DWORD timeout);
     int    SetWaveParam(int rawSize, int rate);
     int    SetBuffer(int bufCount, int waveCount);

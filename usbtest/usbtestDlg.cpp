@@ -69,10 +69,12 @@ BOOL CUsbtestDlg::OnInitDialog()
         PostQuitMessage(-1);
     }
 
-    waveSize = 4000;
+    waveSize = 1000;
     waveCount = 10;
+    SetWaveParam(devID, waveSize, 1);    
 
-    SetWaveParam(devID, waveSize, 1);
+   // SendCommand(devID, CMD_SET_TEST, 1);
+    SendCommand(devID, CMD_SET_TRIGWAVE_DELAY, 100);
 
     for (int i = 0; i < 10; i++)
     {
@@ -81,6 +83,8 @@ BOOL CUsbtestDlg::OnInitDialog()
     }
 
     HANDLE h = CreateThread(NULL, 0, ::WaitWaveProc, this, 0, &dwThreadID);
+
+    StartDevice(devID);
 
 	return TRUE;  // 除非将焦点设置到控件，否则返回 TRUE
 }
@@ -113,7 +117,6 @@ void CUsbtestDlg::OnPaint()
 	}
 }
 
-
 void CUsbtestDlg::OnLButtonUp(UINT_PTR id, CPoint pt)
 {
     static int i = 0;
@@ -139,9 +142,9 @@ void CUsbtestDlg::OnRButtonUp(UINT_PTR id, CPoint pt)
 {
     static unsigned int i = 1;
     if (i % 2)
-        StartDevice(devID);
+        StartCapture(devID);
     else
-        StopDevice(devID);
+        StopCapture(devID);
 
     i++;
 }
@@ -165,7 +168,6 @@ void CUsbtestDlg::ShowWave(CPaintDC& dc, RECT& rc)
     if (!m_buffer)
         return;
 
-
     CDC memDC;  //定义内存DC
     CBitmap memBitmap;
     CBitmap* pOldBmp = NULL;
@@ -182,7 +184,7 @@ void CUsbtestDlg::ShowWave(CPaintDC& dc, RECT& rc)
     rect.right = rc.right - 2;
 
     unsigned char* waveData = m_buffer;
-    int len = waveSize/5;
+    int len = waveSize;
 
     double step = (double)(rect.right - rect.left) / len;
     double scale = (double)(rect.bottom - rect.top) / (double)255;
@@ -216,11 +218,33 @@ DWORD CUsbtestDlg::WaitWaveProc()
             continue;
         }
 
+        
+        
         unsigned char* buffer = NULL;
         if (DEVCTRL_SUCCESS != WaitWavePacket(devID, &buffer, 30000))
         {
             Sleep(0);
             continue;
+        }
+
+
+
+
+        static int ifile = 0;
+
+        if (ifile < 10)
+        {
+            char name[16];
+            sprintf_s(name, 16, "wave_%d.log", ifile);
+
+            FILE* pf = fopen(name, "w");
+            for (int i = 0; i < waveSize*waveCount; i++)
+            {
+                fprintf_s(pf, "%d\n", buffer[i]);
+            }
+            fclose(pf);
+
+            ifile++;
         }
 
         AddBuffer(devID, m_buffer, waveSize*waveCount);

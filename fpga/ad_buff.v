@@ -25,7 +25,7 @@ module ad_buff
 	always@(posedge i_ad_clk or negedge i_rst_n)
 	if(!i_rst_n)
 	begin
-		st <= 0;
+		st <= 1'd1;
 		working <= 0;
 	end
 	else

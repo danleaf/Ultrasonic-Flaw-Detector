@@ -177,6 +177,15 @@
     <None Include="cmdproc.v">
       <Filter>源文件</Filter>
     </None>
+    <None Include="gain.v">
+      <Filter>源文件</Filter>
+    </None>
+    <None Include="outtriger.v">
+      <Filter>源文件</Filter>
+    </None>
+    <None Include="trigwave.v">
+      <Filter>源文件</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\types.h">

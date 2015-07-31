@@ -26,15 +26,16 @@ module ad_wrapper
 	
 	initial
 	begin
-		st0 = 0;
-		st1 = 0;
+		st0 = 1'b1;
+		st1 = 1'b1;
 		st = 0;
 	end
 	
 	always@(posedge i_ad_clk or negedge i_rst_n)
 	if(!i_rst_n)
 	begin
-		{st0,st1,st} <= 3'b000;
+		st <= 0;
+		{st0,st1} <= 2'b11;
 		o_ad_open <= 0;
 	end
 	else

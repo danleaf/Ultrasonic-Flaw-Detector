@@ -88,3 +88,19 @@ int __stdcall DeleteAllBuffer(int devID)
 
     return 0;
 }
+
+int  __stdcall StartCapture(int devID)
+{
+    GET_DEVICE_MANAGER(devID);
+    mgr->StartCapture();
+
+    return 0;
+}
+
+int  __stdcall StopCapture(int devID)
+{
+    GET_DEVICE_MANAGER(devID);
+    mgr->StopCapture();
+
+    return 0;
+}

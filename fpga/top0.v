@@ -50,6 +50,21 @@ module top0
 	wire [19:0] cycle;
 	wire [11:0] pulse;
 	wire [15:0] cmd_finish_code;
+	wire outtrig,intrig;
+	wire [15:0] outdelay,wavedaly;
+	wire [7:0] gaindata;
+	wire test;
+	
+	assign o_da_data = gaindata;
+	
+	reg [9:0] sinaddr;
+	//sindata sin(sinaddr,i_clk50M,o_da_data);
+	
+	always@(posedge i_clk50M or negedge i_rst_n)
+	if(!i_rst_n)
+		sinaddr <= 0;
+	else
+		sinaddr <= sinaddr + 1'd1;
 	
 	cmdproc cmdproc_inst(
 		.i_clk(clk_sys_100M),
@@ -64,61 +79,55 @@ module top0
 		.o_waveRate(waveRate),
 		.o_cycle(cycle),
 		.o_pulse(pulse),
+		.o_outdelay(outdelay),
+		.o_wavedelay(wavedaly),
+		.o_gaindata(gaindata),
+		.o_test(test),
 		.o_finish(cmd_finish),
 		.o_finish_code(cmd_finish_code)
 	);
 	
 	
-	
-	wire trig;
 	triger trig_inst(
-		.clk(clk_sys_100M), 
+		.i_clk100M(clk_sys_100M), 
 		.rst_n(i_rst_n), 
 		.en(run & !outmode),
 		.cycle(cycle),	
-		.pulse(pulse),	
-		.q(trig), 
-		.q2(o_trig),
-		.led(/*o_led*/),
-		.dac_data(o_da_data)
+		.q(intrig)
 	);	
 	
-	wire [15:0] ad_dual_data;
-	wire ad_rd_empty;
+	outtriger ot(
+		.i_clk100M(clk_sys_100M), 
+		.i_rst_n(i_rst_n), 
+		.i_outtrig(i_trig),
+		.i_negedge(outnegedge),
+		.i_delay(outdelay),		
+		.o_trig_recv(outtrig)
+	);
+
+	trigwave tw(
+		.i_clk100M(clk_sys_100M), 
+		.i_rst_n(i_rst_n), 
+		.i_trig(outmode ? outtrig : intrig),
+		.i_delay(wavedaly),	
+		.i_pulse(pulse),	
+		.o_trig(o_trig)
+	);
 	
 	reg [7:0] ii_ad_data;
-	reg _trig,__trig;
-	
-	always@(posedge clk_ad_180M or negedge i_rst_n)
-	if(!i_rst_n)
-	begin
-		ii_ad_data <= 0;
-		_trig <= 0;
-		__trig <= 0;
-	end
-	else
-	begin
-		__trig <= trig;
-		_trig <= __trig;
-		if(!_trig & __trig)
-		begin
-			ii_ad_data <= 'd248;
-		end
-		else
-			ii_ad_data <= (ii_ad_data == 'd99) ? 0 : ii_ad_data + 1'd1;
-	end
+	wire [15:0] ad_dual_data;
+	wire ad_rd_empty;
 	
 	
 	ad_wrapper ad_wrapper_inst (
 		 .i_ad_clk(clk_ad_180M),
 		 .i_rd_clk(clk_sys_100M),
 		 .i_rst_n(i_rst_n),
-		 .i_ad_data(i_ad_data), 
-		 //.i_ad_data(ii_ad_data),	 
+		 .i_ad_data(test ? ii_ad_data : i_ad_data), 
 		 .o_dual_data(ad_dual_data),
-		 .i_st(trig),
+		 .i_st(intrig),
 		 .i_isout(outmode),
-		 .i_stout(outnegedge ? ~i_trig : i_trig),
+		 .i_stout(outtrig),
 		 .o_rd_empty(ad_rd_empty),
 		 .o_ad_open(),
 		 .i_recv_count(waveRawSize),
@@ -159,6 +168,28 @@ module top0
 	);
 	
 
+	
+	reg _trig,__trig;
+	
+	always@(posedge clk_ad_180M or negedge i_rst_n)
+	if(!i_rst_n)
+	begin
+		ii_ad_data <= 0;
+		_trig <= 0;
+		__trig <= 0;
+	end
+	else
+	begin
+		__trig <= o_trig;
+		_trig <= __trig;
+		if(!_trig & __trig)
+		begin
+			ii_ad_data <= 8'd255;
+		end
+		else
+			ii_ad_data <= (ii_ad_data == 8'd99) ? 0 : ii_ad_data + 1'd1;
+	end
+	
 endmodule
 
 

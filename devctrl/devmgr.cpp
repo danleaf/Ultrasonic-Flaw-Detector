@@ -32,6 +32,7 @@ CDeviceManager::CDeviceManager(const UFD_DEVINFO& dev)
     m_evtCommandRsp = CreateEvent(NULL, FALSE, FALSE, NULL);
     m_curCmd = 0;
     m_curCmdRsp = 0;
+    m_aboradCapture = FALSE;
 
     m_hThread = CreateThread(NULL, 0, ::ReceivDataProc, this, CREATE_SUSPENDED, &m_dwThreadID);
     SetThreadPriority(m_hThread, THREAD_PRIORITY_TIME_CRITICAL);
@@ -128,7 +129,7 @@ int CDeviceManager::WaitWavePacket(unsigned char** pBuffer, DWORD timeout)
     DWORD ret = WaitForSingleObject(m_hPacketEvent, timeout);
 
     if (WAIT_TIMEOUT == ret)
-        return -1;
+        return ApiWaitTimeout;
 
     *pBuffer = m_pktBuffer;
     return 0;
@@ -214,7 +215,7 @@ int CDeviceManager::ReceiveDataUSB()
     bool ret = m_device.usbDev.inEndPoint->XferData(m_cache, lenBytes);
 
     if (!ret)
-        return -1;
+        return ApiRecveUSBDataFailed;
 
     return lenBytes;
 }
@@ -234,16 +235,15 @@ int CDeviceManager::SendCommand(unsigned short cmd, unsigned int param)
 
     int ret = SendData((unsigned char*)cmdl, 8);
 
-    if (DEVCTRL_SUCCESS == ret)
+    if (ret > 0)
     {
         DWORD rsp = WaitForSingleObject(m_evtCommandRsp, 1000);
         if (WAIT_TIMEOUT == rsp)
-            ret = -1;
-        ret = m_curCmdRsp;
-
-        //若返回值不为零说明失败，将其设为负值
-        if (DEVCTRL_SUCCESS != ret)
-            ret |= 0x80000000;
+            ret = ApiWaitDeviceRspTimeOut;
+        else
+        {
+            ret = m_curCmdRsp;
+        }
     }
 
     ReleaseMutex(m_mtxSendCommand);
@@ -266,9 +266,9 @@ int CDeviceManager::SendDataUSB(unsigned char* buffer, int len)
     bool ret = m_device.usbDev.outEndPoint->XferData(buffer, lenBytes);
 
     if (!ret)
-        return -1;
+        return ApiSendUSBDataFailed;
 
-    return 0;
+    return lenBytes;
 }
 
 int CDeviceManager::SendDataEth(unsigned char* buffer, int len)
@@ -302,6 +302,9 @@ void CDeviceManager::AddBuffer(unsigned char* buffer, int length)
 
 PUFD_BUFFER CDeviceManager::PostBuffer()
 {
+    if (m_aboradCapture)
+        return NULL;
+
     WaitForSingleObject(m_mtxBufferList, INFINITE);
 
     if (NULL != m_buffer)
@@ -363,10 +366,27 @@ void CDeviceManager::DeleteAllBuffer()
     InterlockedExchange(&m_bufferUsed, FALSE);
 }
 
+int CDeviceManager::StartCapture()
+{
+    InterlockedExchange(&m_aboradCapture, FALSE);
+
+    return 0;
+}
+
+int CDeviceManager::StopCapture()
+{
+    InterlockedExchange(&m_aboradCapture, TRUE);
+    ResetBuffer();
+    return 0;
+}
+
 PUFD_BUFFER CDeviceManager::GetUsedBuffer()
 {
-    long used = InterlockedCompareExchange(&m_bufferUsed, TRUE, FALSE);
+    if (m_aboradCapture)
+        return NULL;
 
+    long used = InterlockedCompareExchange(&m_bufferUsed, TRUE, FALSE);
+    
     if (!used)
         return m_buffer;
 
