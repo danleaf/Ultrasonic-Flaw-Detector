@@ -15,8 +15,8 @@ module ip
 	localparam DSTIP_OFFSET = 5'd16;
 	localparam CHECKSUM_OFFSET = 5'd10;
 	localparam IP_HEADER_LENGTH = 5'd20;
-	localparam INIT_CHECKSUM = 16'hD66C;
-	localparam INIT_CHECKSUM_WITHOUT_IP = 16'h5312;
+	localparam INIT_CHECKSUM = 16'h486C;
+	localparam INIT_CHECKSUM_WITHOUT_IP = 16'hC511;
 	localparam CMD_SET_SRCIP = 2'd1;
 	localparam CMD_SET_DSTIP = 2'd2;
 	localparam INIT_SRCIP = 32'h_C0_A8_01_04;
@@ -242,12 +242,12 @@ module ip
 			begin
 				if(ending_cnt == 2'd1)
 				begin
-					iph_byte <= checksum[15:8];
+					iph_byte <= ~checksum[15:8];		//IP头中填的校验和是计算的值取反
 					iph_idx <= CHECKSUM_OFFSET;
 				end
 				else if(ending_cnt == 2'd2)
 				begin
-					iph_byte <= checksum[7:0];
+					iph_byte <= ~checksum[7:0];		//同上
 					iph_idx <= CHECKSUM_OFFSET + 1'd1;
 				end
 				

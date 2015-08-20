@@ -10,6 +10,13 @@
 db/
 incremental_db/
 inclib/
+greybox_tmp/
+sim/
+simulation/
+work/
+pcb/lib/
+Project Outputs for ufd/
+Project Outputs for test/
 *.LST
 *.hex
 *.M51
@@ -35,6 +42,21 @@ slavefifo
 *.dll
 *.zip
 *.rar
+*.ppf
+*.mti
+*.mpf
+*.sft
+*.vo
+*.csd
+*.xrf
+*.wlf
+*.0
+*.qdf
+*.ini
+*.PrjPCBStructure
+*.drc
+*.html
+*.PLC
 
 # Build results
 

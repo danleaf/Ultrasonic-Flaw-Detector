@@ -186,6 +186,15 @@
     <None Include="trigwave.v">
       <Filter>源文件</Filter>
     </None>
+    <None Include="88e1111.csv">
+      <Filter>资源文件</Filter>
+    </None>
+    <None Include="ufd.stp">
+      <Filter>资源文件</Filter>
+    </None>
+    <None Include="usb.csv">
+      <Filter>资源文件</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\types.h">

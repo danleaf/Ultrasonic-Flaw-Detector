@@ -11,7 +11,7 @@ module eth_commu
 	output reg [31:0] o_param,
 	output reg o_cmd_come,
 	
-	inout io_eth_mdio,
+	//inout io_eth_mdio,
 	output o_eth_mdc,
 	
 	output o_eth_txen,
@@ -192,7 +192,7 @@ module eth_commu
 		.o_data(mac_rx_data),
 		.o_rx(mac_rx),
 		
-		.io_eth_mdio(io_eth_mdio),
+		//.io_eth_mdio(io_eth_mdio),
 		.o_eth_mdc(o_eth_mdc),
 		.o_eth_txen(o_eth_txen),
 		.o_eth_txer(o_eth_txer),
@@ -274,7 +274,7 @@ module eth_commu
 		{udp_hdr[0],udp_hdr[1],udp_hdr[2],udp_hdr[3]} <= {PORT_NUMBER,PORT_NUMBER};
 		{udp_hdr[6],udp_hdr[7]} <= 0;
 		
-		{ip_hdr[0],ip_hdr[1],ip_hdr[IP_TTL_OFFSET],ip_hdr[IP_PROT_OFFSET]} <= {8'h54,8'd0,8'd255,UDP};
+		{ip_hdr[0],ip_hdr[1],ip_hdr[IP_TTL_OFFSET],ip_hdr[IP_PROT_OFFSET]} <= {8'h45,8'd0,8'd128,UDP};
 		{ip_hdr[4],ip_hdr[5],ip_hdr[6],ip_hdr[7]} <= 0;
 		
 		{ip_hdr[IP_SRCIP_OFFSET],ip_hdr[IP_SRCIP_OFFSET+3'd1],ip_hdr[IP_SRCIP_OFFSET+3'd2],ip_hdr[IP_SRCIP_OFFSET+3'd3]} <= INIT_LOCAL_IP;

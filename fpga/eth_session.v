@@ -7,7 +7,7 @@ module eth_session
 	output [7:0] o_cmd,
 	output [31:0] o_param,
 	
-	inout io_eth_mdio,
+	//inout io_eth_mdio,
 	output o_eth_mdc,
 	
 	output o_eth_txen,
@@ -49,7 +49,14 @@ module eth_session
 	
 	assign o_full = full;
 	
-	altdualram buffer(i_clk,i_data,rd_addr,wr_addr,wren,rd_data);
+	dualram_rdreg #(13,8) buffer(
+		.clock(i_clk),
+		.data(i_data),
+		.rdaddress(rd_addr),
+		.wraddress(wr_addr),
+		.wren(wren),
+		.q(rd_data));
+	
 	
 	counter16 rd_addr_cnt(
 		.i_clk(i_clk),
@@ -83,7 +90,7 @@ module eth_session
 		.o_cmd(o_cmd),
 		.o_param(o_param),
 		.o_cmd_come(o_cmd_come),
-		.io_eth_mdio(io_eth_mdio),
+		//.io_eth_mdio(io_eth_mdio),
 		.o_eth_mdc(o_eth_mdc),
 		.o_eth_txen(o_eth_txen),
 		.o_eth_txer(o_eth_txer),

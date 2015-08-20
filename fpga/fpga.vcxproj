@@ -65,6 +65,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <None Include="88e1111.csv" />
     <None Include="ADC.v" />
     <None Include="add.v" />
     <None Include="adusb.csv" />
@@ -118,6 +119,8 @@
     <None Include="udp.v" />
     <None Include="ufd.csv" />
     <None Include="ufd.pin" />
+    <None Include="ufd.stp" />
+    <None Include="usb.csv" />
     <None Include="usb.v" />
     <None Include="voice.sdc" />
     <None Include="voice.v" />

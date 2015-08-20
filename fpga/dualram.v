@@ -1,4 +1,4 @@
-module dualram
+module dualram			//读地址立即起效，用寄存器实现，容量不能大，大了编译慢，太大编译不过
  #(parameter ASIZE = 3,    
    parameter DSIZE = 8)    
 (
@@ -47,7 +47,10 @@ module dualram8
 
 endmodule
 
-module altdualram0 (
+module dualram_rdreg				//读地址打一拍，用sram模块实现，适合较大容量
+ #(parameter ASIZE = 13,    
+   parameter DSIZE = 8)  
+(
 	clock,
 	data,
 	rdaddress,
@@ -55,21 +58,27 @@ module altdualram0 (
 	wren,
 	q);
 
-	input	  clock;
-	input	[7:0]  data;
-	input	[12:0]  rdaddress;
-	input	[12:0]  wraddress;
-	input	  wren;
-	output	[7:0]  q;
+	input	clock;
+	input	[DSIZE-1:0]  data;
+	input	[ASIZE-1:0]  rdaddress;
+	input	[ASIZE-1:0]  wraddress;
+	input	 wren;
+	output [DSIZE-1:0]  q;
 	
-	reg [7:0] mem [0:8191];
+	localparam RAMDEPTH = 1 << ASIZE;
+
+	reg [DSIZE-1:0] mem [RAMDEPTH-1:0];
+	reg [ASIZE-1:0]  rdaddr;
 	
-	assign q = mem[rdaddress];
+	assign q = mem[rdaddr];
 	
 	always@(posedge clock)
-	if(wren)
-	  mem[wraddress] <= data;
+	begin
+		if(wren)
+		  mem[wraddress] <= data;
+	rdaddr <= rdaddress;
+	end
 	
 
 endmodule
-
+

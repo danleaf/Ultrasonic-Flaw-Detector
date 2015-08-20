@@ -7,7 +7,7 @@ module mac
 	output [7:0] o_data,
 	output reg o_rx,		//o_rx = 1 means data is on o_data
 	
-	inout io_eth_mdio,
+	//inout io_eth_mdio,
 	output o_eth_mdc,
 	
 	output o_eth_txen,
@@ -40,7 +40,7 @@ module mac
 	assign o_eth_txd = eth_txd;
 	assign o_tx_over = tx_over;
 	assign o_eth_mdc = 1'bz;
-	assign io_eth_mdio = 1'bz;
+	//assign io_eth_mdio = 1'bz;
 	
 	wire lastPdu = i_last_data;
 	wire lastFcs = (crc_idx == 2'd3);
