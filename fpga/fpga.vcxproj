@@ -94,6 +94,7 @@
     <None Include="NUMSHOW.v" />
     <None Include="outtriger.v" />
     <None Include="packet.v" />
+    <None Include="phy_reset.v" />
     <None Include="pins.csv" />
     <None Include="pins2.csv" />
     <None Include="pll100m.v" />
@@ -119,6 +120,7 @@
     <None Include="udp.v" />
     <None Include="ufd.csv" />
     <None Include="ufd.pin" />
+    <None Include="ufd.sdc" />
     <None Include="ufd.stp" />
     <None Include="usb.csv" />
     <None Include="usb.v" />

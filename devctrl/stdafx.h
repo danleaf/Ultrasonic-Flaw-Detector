@@ -16,8 +16,10 @@
 #include "types.h"
 #include <map>
 #include <list>
+#include <string.h>
 #include <string>
 #include <winioctl.h>
 #include <assert.h>
+#include <WinSock2.h>
 
 using namespace std;

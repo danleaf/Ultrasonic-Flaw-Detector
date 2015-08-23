@@ -16,7 +16,7 @@ module test();
     #22 intrig = 1'b1;
   end
 
-  always #20 eth_gtxclk = ~eth_gtxclk;
+  always #4 eth_gtxclk = ~eth_gtxclk;
 
 	
 	reg _intrig,wr;

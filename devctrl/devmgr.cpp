@@ -5,6 +5,7 @@
 #define CACHE_SIZE 10240
 
 map<int, CDeviceManager*> CDeviceManager::devmgrs;
+SOCKET CDeviceManager::sock = NULL;
 
 
 DWORD WINAPI ReceivDataProc(void* param)
@@ -44,6 +45,48 @@ CDeviceManager::~CDeviceManager()
     delete m_cache;
 }
 
+void CDeviceManager::Initialize()
+{
+    if (NULL != sock)
+        return;
+
+    WSADATA wsa;
+
+    if (WSAStartup(MAKEWORD(2, 0), &wsa) != 0)
+        return;
+
+    sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+    if (sock == INVALID_SOCKET)
+    {
+        sock = NULL;
+        WSACleanup();
+        return;
+    }
+    
+    SOCKADDR_IN addr;
+    memset(&addr, 0, sizeof(addr));
+    addr.sin_family = AF_INET;
+    addr.sin_port = htons(0xFEEF);
+    addr.sin_addr.s_addr = inet_addr("192.168.1.5");
+
+    bool opt = true;
+    if (0 > setsockopt(sock, SOL_SOCKET, SO_BROADCAST, (char*)&opt, sizeof(opt)))
+    {
+        sock = NULL;
+        closesocket(sock);
+        WSACleanup();
+        return;
+    }
+
+    if (0 > bind(sock, (sockaddr*)&addr, sizeof(addr)))
+    {
+        sock = NULL;
+        closesocket(sock);
+        WSACleanup();
+        return;
+    }
+}
+
 void CDeviceManager::EnumerateDevices(list<int>& devIDs)
 {
     EnumerateDevices();
@@ -56,51 +99,67 @@ void CDeviceManager::EnumerateDevices(list<int>& devIDs)
 
 void CDeviceManager::EnumerateDevices()
 {
+    Initialize();
+
     if (devmgrs.size() > 0)
         return;
 
     int devID = 1;
 
     CCyUSBDevice* usbdev = new CCyUSBDevice(NULL, CYUSBDRV_GUID, true);
-    CCyUSBEndPoint* inEndPoint = usbdev->BulkInEndPt;
-    CCyUSBEndPoint* outEndPoint = usbdev->BulkOutEndPt;
 
-    if (outEndPoint == NULL || inEndPoint == NULL)
+    if (usbdev->ControlEndPt != NULL)
     {
-        LoadHexToRam(usbdev);
+        CCyUSBEndPoint* inEndPoint = usbdev->BulkInEndPt;
+        CCyUSBEndPoint* outEndPoint = usbdev->BulkOutEndPt;
+
+        if (outEndPoint == NULL || inEndPoint == NULL)
+        {
+            LoadHexToRam(usbdev);
+        }
+
+        int time = 0;
+        while (outEndPoint == NULL || inEndPoint == NULL)
+        {
+            if (time > 5000)
+                break;
+            Sleep(1);
+            delete usbdev;
+            usbdev = new CCyUSBDevice(NULL, CYUSBDRV_GUID, true);
+            inEndPoint = usbdev->BulkInEndPt;
+            outEndPoint = usbdev->BulkOutEndPt;
+            time++;
+        }
+
+        if (outEndPoint != NULL && inEndPoint != NULL)
+        {
+            usbdev->Reset();
+
+            UFD_DEVINFO dev;
+            dev.devID = devID;
+            dev.protType = UFD_USB;
+            dev.devIP = 0;
+            dev.usbDev.dev = usbdev;
+            dev.usbDev.inEndPoint = inEndPoint;
+            dev.usbDev.outEndPoint = outEndPoint;
+
+            inEndPoint->TimeOut = 100;
+            outEndPoint->TimeOut = 100;
+
+            CDeviceManager* mgr = new CDeviceManager(dev);
+            devmgrs[devID] = mgr;
+
+            devID = devID + 1;
+        }
     }
+}
 
-    int time = 0;
-    while (outEndPoint == NULL || inEndPoint == NULL)
-    {
-        if (time > 5000)
-            return;
-        Sleep(1);
-        delete usbdev;
-        usbdev = new CCyUSBDevice(NULL, CYUSBDRV_GUID, true);
-        inEndPoint = usbdev->BulkInEndPt;
-        outEndPoint = usbdev->BulkOutEndPt;
-        time++;
-    }
+void CDeviceManager::SearchEthDevices()
+{
+    if (NULL == sock)
+        return;
 
 
-    usbdev->Reset();
-
-    UFD_DEVINFO dev;
-    dev.devID = devID;
-    dev.protType = UFD_USB;
-    dev.devIP = 0;
-    dev.usbDev.dev = usbdev;
-    dev.usbDev.inEndPoint = inEndPoint;
-    dev.usbDev.outEndPoint = outEndPoint;
-
-    inEndPoint->TimeOut = 100;
-    outEndPoint->TimeOut = 100;
-
-    CDeviceManager* mgr = new CDeviceManager(dev);
-    devmgrs[devID] = mgr;
-
-    devID = devID + 1;
 }
 
 CDeviceManager* CDeviceManager::GetManagerByDeviceID(int devID)

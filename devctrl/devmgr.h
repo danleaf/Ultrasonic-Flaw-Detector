@@ -34,8 +34,11 @@ class CDeviceManager
     volatile long m_aboradCapture;
 
     static map<int, CDeviceManager*> devmgrs;
+    static SOCKET sock;
 
 public:
+    static void Initialize();
+    static void SearchEthDevices();
     static void EnumerateDevices();
     static void EnumerateDevices(list<int>& devIDs);
     static CDeviceManager* GetManagerByDeviceID(int devID);

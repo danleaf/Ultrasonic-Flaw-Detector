@@ -14,14 +14,14 @@ module cmdproc
 	output reg [7:0] o_gaindata,
 	output reg o_test,
 	output reg o_finish,
-	output [15:0] o_finish_code
+	output reg [15:0] o_finish_code
 );
-
-	assign o_finish_code = 0;
 
 	localparam ST_IDEL = 8'd1;
 	localparam ST_PROC = 8'd2;
 	localparam ST_END = 8'd4;
+	
+	localparam GLOBAL_IDENT = 32'hFEFEEFEF;
 	
 	localparam CMD_START_RUN = 16'd1;
 	localparam CMD_STOP_RUN = 16'd2;
@@ -33,6 +33,10 @@ module cmdproc
 	localparam CMD_SET_TRIGWAVE_DELAY = 16'd8;
 	localparam CMD_SET_TEST = 16'd9;
 	localparam CMD_SET_GAIN = 16'd10;
+	localparam CMD_SET_SERVER = 16'hFFFE;
+	localparam CMD_SET_LOCAL = 16'hFFFD;
+	
+	localparam ERR_IDENT_ERROR = 16'd1;
 	
 	reg cmd_come, _cmd_come;
 	reg [15:0] cmd;
@@ -55,7 +59,7 @@ module cmdproc
 		o_run <= 0;
 		o_outmode <= 0;
 		o_outnegedge <= 0;
-		o_waveRawSize <= 16'd128;
+		o_waveRawSize <= 16'd32;
 		o_waveRate <= 3'd1;
 		o_cycle <= 20'd1000000;
 		o_pulse <= 12'd100;
@@ -63,7 +67,7 @@ module cmdproc
 		o_wavedelay <= 0;
 		o_test <= 0;
 		o_gaindata <= 8'd100;
-		//o_finish_code <= 0;
+		o_finish_code <= 0;
 	end
 	else
 	case(state)			
@@ -94,6 +98,8 @@ module cmdproc
 				o_gaindata <= param[7:0];
 			CMD_SET_TEST:
 				o_test <= param[0];
+			CMD_SET_SERVER:
+				o_finish_code <= (GLOBAL_IDENT == param) ? 0 : ERR_IDENT_ERROR;
 			endcase
 		end
 			
@@ -101,7 +107,7 @@ module cmdproc
 	
 	
 	reg [7:0] state;
-	reg [1:0] cnt;
+	reg [4:0] cnt;
 	
 	always @(posedge i_clk or negedge i_rst_n)
 	if(!i_rst_n)
@@ -124,8 +130,16 @@ module cmdproc
 		begin
 			o_finish <= 0;
 			cnt <= cnt + 1'd1;
-			if(cnt == 2'd3)
-				state <= ST_END;
+			if(cmd==CMD_SET_SERVER)
+			begin
+				if(cnt == 5'd31)
+					state <= ST_END;
+			end
+			else
+			begin
+				if(cnt == 5'd3)
+					state <= ST_END;
+			end
 		end
 		
 		ST_END:

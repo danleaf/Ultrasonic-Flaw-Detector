@@ -195,6 +195,12 @@
     <None Include="usb.csv">
       <Filter>资源文件</Filter>
     </None>
+    <None Include="phy_reset.v">
+      <Filter>源文件</Filter>
+    </None>
+    <None Include="ufd.sdc">
+      <Filter>资源文件</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\types.h">

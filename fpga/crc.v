@@ -1,7 +1,82 @@
 //x32+x26+x23+x22+x16+x12+x11+x10+x8+x7+x5+x4+x2+x1+1
 
+module crc_
+(
+	input clk,rst_n,en,
+	input [7:0] d,
+	output reg [31:0] crc
+);
+
+	wire[31:0] crc_tmp1 ;
+	wire[31:0] crc_tmp2 ;
+	wire[3:0] crc_table_adr1;
+	wire[3:0] crc_table_adr2;
+
+	reg[31:0] crc_table_data1;
+	reg[31:0] crc_table_data2;
+
+	always @(crc_table_adr1) begin
+		 case (crc_table_adr1) 
+			4'h0:crc_table_data1=32'h4DBDF21C; 
+			4'h1:crc_table_data1=32'h500AE278; 
+			4'h2:crc_table_data1=32'h76D3D2D4; 
+			4'h3:crc_table_data1=32'h6B64C2B0;
+			4'h4:crc_table_data1=32'h3B61B38C;
+			4'h5:crc_table_data1=32'h26D6A3E8;
+			4'h6:crc_table_data1=32'h000F9344;
+			4'h7:crc_table_data1=32'h1DB88320;
+			4'h8:crc_table_data1=32'hA005713C;
+			4'h9:crc_table_data1=32'hBDB26158;
+			4'hA:crc_table_data1=32'h9B6B51F4; 
+			4'hB:crc_table_data1=32'h86DC4190;
+			4'hC:crc_table_data1=32'hD6D930AC; 
+			4'hD:crc_table_data1=32'hCB6E20C8; 
+			4'hE:crc_table_data1=32'hEDB71064;
+			4'hF:crc_table_data1=32'hF0000000;
+		 
+		 endcase
+	end
+
+	always @(crc_table_adr2) begin
+		 case (crc_table_adr2) 
+			4'h0:crc_table_data2=32'h4DBDF21C; 
+			4'h1:crc_table_data2=32'h500AE278; 
+			4'h2:crc_table_data2=32'h76D3D2D4; 
+			4'h3:crc_table_data2=32'h6B64C2B0;
+			4'h4:crc_table_data2=32'h3B61B38C;
+			4'h5:crc_table_data2=32'h26D6A3E8;
+			4'h6:crc_table_data2=32'h000F9344;
+			4'h7:crc_table_data2=32'h1DB88320;
+			4'h8:crc_table_data2=32'hA005713C;
+			4'h9:crc_table_data2=32'hBDB26158;
+			4'hA:crc_table_data2=32'h9B6B51F4; 
+			4'hB:crc_table_data2=32'h86DC4190;
+			4'hC:crc_table_data2=32'hD6D930AC; 
+			4'hD:crc_table_data2=32'hCB6E20C8; 
+			4'hE:crc_table_data2=32'hEDB71064;
+			4'hF:crc_table_data2=32'hF0000000;
+		 
+		 endcase
+	end
+	
+	 always @(posedge clk or negedge rst_n)
+	 begin
+		if(!rst_n)
+			crc <= 32'h00000000;
+		
+		else if(en)
+			crc <= crc_tmp2;	
+	end
+
+	assign crc_table_adr1=crc[3:0] ^ d[7-3:0]; 
+	assign crc_table_adr2=crc_tmp1[3:0] ^ d[7-7:4]; 
+	assign crc_tmp1 = (crc>>4)^crc_table_data1;
+	assign crc_tmp2 = (crc_tmp1>>4)^crc_table_data2 ;
+	
+endmodule
+
 module crc
-#(parameter INIT = 32'hFFFFFFFF)
+#(parameter INIT = 32'hFFFFFFFF, XOR = 32'hFFFFFFFF)
 (
 	input clk,rst_n,en,
 	input [7:0] d,
@@ -10,7 +85,7 @@ module crc
 	reg [31:0] r;
 	wire sig;
 	
-	assign crc = r;
+	assign crc = r ^ XOR;
 	
 	initial
 	begin
@@ -21,8 +96,46 @@ module crc
 	if(!rst_n)
 		r <= INIT;
 	else if(en)
-	begin
-		r[31] <= r[23] ^ r[29] ^ d[7-2];
+	begin		
+		//LSB
+		r[31-31] <= r[31-23] ^ r[31-29] ^ d[2];
+		r[31-30] <= r[31-22] ^ r[31-28] ^ r[31-31] ^ d[0] ^ d[3];
+		r[31-29] <= r[31-21] ^ r[31-27] ^ r[31-30] ^ r[31-31] ^ d[0] ^ d[1] ^ d[4];
+		r[31-28] <= r[31-20] ^ r[31-30] ^ r[31-29] ^ r[31-26] ^ d[1] ^ d[2] ^ d[5];
+		r[31-27] <= r[31-19] ^ r[31-25] ^ r[31-28] ^ r[31-29] ^ r[31-31] ^ d[0] ^ d[2] ^ d[3] ^ d[6];
+		r[31-26] <= r[31-18] ^ r[31-24] ^ r[31-27] ^ r[31-28] ^ r[31-30] ^ d[1] ^ d[3] ^ d[4] ^ d[7];
+		r[31-25] <= r[31-17] ^ r[31-26] ^ r[31-27] ^ d[4] ^ d[5];
+		r[31-24] <= r[31-16] ^ r[31-25] ^ r[31-26] ^ r[31-31] ^ d[0] ^ d[5] ^ d[6];
+		
+		r[31-23] <= r[31-15] ^ r[31-24] ^ r[31-25] ^ r[31-30] ^ d[1] ^ d[6] ^ d[7];
+		r[31-22] <= r[31-14] ^ r[31-24] ^ d[7];
+		r[31-21] <= r[31-13] ^ r[31-29] ^ d[2];
+		r[31-20] <= r[31-12] ^ r[31-28] ^ d[3];
+		r[31-19] <= r[31-11] ^ r[31-27] ^ r[31-31] ^ d[0] ^ d[4];
+		r[31-18] <= r[31-10] ^ r[31-26] ^ r[31-30] ^ r[31-31] ^ d[0] ^ d[1] ^ d[5];
+		r[31-17] <= r[31-9] ^ r[31-25] ^ r[31-29] ^ r[31-30] ^ d[1] ^ d[2] ^ d[6];
+		r[31-16] <= r[31-8] ^ r[31-24] ^ r[31-28] ^ r[31-29] ^ d[2] ^ d[3] ^ d[7];
+		
+		r[31-15] <= r[31-7] ^ r[31-27] ^ r[31-28] ^ r[31-29] ^ r[31-31] ^ d[0] ^ d[2] ^ d[3] ^ d[4];
+		r[31-14] <= r[31-6] ^ r[31-26] ^ r[31-27] ^ r[31-28] ^ r[31-30] ^ r[31-31] ^ d[0] ^ d[1] ^ d[3] ^ d[4] ^ d[5];
+		r[31-13] <= r[31-5] ^ r[31-25] ^ r[31-26] ^ r[31-27] ^ r[31-29] ^ r[31-30] ^ r[31-31] ^ d[0] ^ d[1] ^ d[2] ^ d[4] ^ d[5] ^ d[6];
+		r[31-12] <= r[31-4] ^ r[31-24] ^ r[31-25] ^ r[31-26] ^ r[31-28] ^ r[31-29] ^ r[31-30] ^ d[1] ^ d[2] ^ d[3] ^ d[5] ^ d[6] ^ d[7];
+		r[31-11] <= r[31-3] ^ r[31-24] ^ r[31-25] ^ r[31-27] ^ r[31-28] ^ d[3] ^ d[4] ^ d[6] ^ d[7];
+		r[31-10] <= r[31-2] ^ r[31-24] ^ r[31-26] ^ r[31-27] ^ r[31-29] ^ d[2] ^ d[4] ^ d[5] ^ d[7];
+		r[31-9] <= r[31-1] ^ r[31-25] ^ r[31-26] ^ r[31-28] ^ r[31-29] ^ d[2] ^ d[3] ^ d[5] ^ d[6];
+		r[31-8] <= r[31-0] ^ r[31-24] ^ r[31-25] ^ r[31-27] ^ r[31-28] ^ d[3] ^ d[4] ^ d[6] ^ d[7];
+		
+		r[31-7] <= r[31-24] ^ r[31-26] ^ r[31-27] ^ r[31-29] ^ r[31-31] ^ d[0] ^ d[2] ^ d[4] ^ d[5] ^ d[7];
+		r[31-6] <= r[31-25] ^ r[31-26] ^ r[31-28] ^ r[31-29] ^ r[31-30] ^ r[31-31] ^ d[0] ^ d[1] ^ d[2] ^ d[3] ^ d[5] ^ d[6];
+		r[31-5] <= r[31-24] ^ r[31-25] ^ r[31-27] ^ r[31-28] ^ r[31-29] ^ r[31-30] ^ r[31-31] ^ d[0] ^ d[1] ^ d[2] ^ d[3] ^ d[4] ^ d[6] ^ d[7];
+		r[31-4] <= r[31-24] ^ r[31-26] ^ r[31-27] ^ r[31-28] ^ r[31-30] ^ d[1] ^ d[3] ^ d[4] ^ d[5] ^ d[7];
+		r[31-3] <= r[31-25] ^ r[31-26] ^ r[31-27] ^ r[31-31] ^ d[0] ^ d[4] ^ d[5] ^ d[6];
+		r[31-2] <= r[31-24] ^ r[31-25] ^ r[31-26] ^ r[31-30] ^ r[31-31] ^ d[0] ^ d[1] ^ d[5] ^ d[6] ^ d[7];
+		r[31-1] <= r[31-24] ^ r[31-25] ^ r[31-30] ^ r[31-31] ^ d[0] ^ d[1] ^ d[6] ^ d[7];
+		r[31-0] <= r[31-24] ^ r[31-30] ^ d[1] ^ d[7];
+		
+		//MSB
+		/*r[31] <= r[23] ^ r[29] ^ d[7-2];
 		r[30] <= r[22] ^ r[28] ^ r[31] ^ d[7-0] ^ d[7-3];
 		r[29] <= r[21] ^ r[27] ^ r[30] ^ r[31] ^ d[7-0] ^ d[7-1] ^ d[7-4];
 		r[28] <= r[20] ^ r[30] ^ r[29] ^ r[26] ^ d[7-1] ^ d[7-2] ^ d[7-5];
@@ -56,7 +169,7 @@ module crc
 		r[3] <= r[25] ^ r[26] ^ r[27] ^ r[31] ^ d[7-0] ^ d[7-4] ^ d[7-5] ^ d[7-6];
 		r[2] <= r[24] ^ r[25] ^ r[26] ^ r[30] ^ r[31] ^ d[7-0] ^ d[7-1] ^ d[7-5] ^ d[7-6] ^ d[7-7];
 		r[1] <= r[24] ^ r[25] ^ r[30] ^ r[31] ^ d[7-0] ^ d[7-1] ^ d[7-6] ^ d[7-7];
-		r[0] <= r[24] ^ r[30] ^ d[7-1] ^ d[7-7];
+		r[0] <= r[24] ^ r[30] ^ d[7-1] ^ d[7-7];*/
 	end
 
 endmodule

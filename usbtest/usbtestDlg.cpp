@@ -216,9 +216,7 @@ DWORD CUsbtestDlg::WaitWaveProc()
         {
             Sleep(1);
             continue;
-        }
-
-        
+        }        
         
         unsigned char* buffer = NULL;
         if (DEVCTRL_SUCCESS != WaitWavePacket(devID, &buffer, 30000))
@@ -226,9 +224,7 @@ DWORD CUsbtestDlg::WaitWaveProc()
             Sleep(0);
             continue;
         }
-
-
-
+        
 
         static int ifile = 0;
 

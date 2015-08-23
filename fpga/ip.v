@@ -7,6 +7,7 @@ module ip
 	output [4:0] o_iph_idx,				// connect with header buffer's addr,start with 0
 	output [7:0] o_iph_byte,			// write this byte to the header's offset given by o_iph_idx when o_wr_iph_en is 1
 	output o_wr_iph_en,
+	output [31:0] o_local_ip,
 	output o_ready
 );
 
@@ -51,6 +52,7 @@ module ip
 	assign o_iph_byte = iph_byte;
 	assign o_wr_iph_en = wr_iph_en;
 	assign o_ready = ready;
+	assign o_local_ip = {sip0,sip1,sip2,sip3};
 	
 	always@(posedge i_clk or negedge i_rst_n)
 	if(!i_rst_n)
