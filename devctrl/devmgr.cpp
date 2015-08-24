@@ -69,7 +69,17 @@ void CDeviceManager::Initialize()
     addr.sin_port = htons(0xFEEF);
     addr.sin_addr.s_addr = inet_addr("192.168.1.5");
 
+    int re_flag = 1;
     bool opt = true;
+    
+    if (0 > setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, (char*)&re_flag, sizeof(re_flag)))
+    {
+        sock = NULL;
+        closesocket(sock);
+        WSACleanup();
+        return;
+    }
+
     if (0 > setsockopt(sock, SOL_SOCKET, SO_BROADCAST, (char*)&opt, sizeof(opt)))
     {
         sock = NULL;
@@ -138,7 +148,6 @@ void CDeviceManager::EnumerateDevices()
             UFD_DEVINFO dev;
             dev.devID = devID;
             dev.protType = UFD_USB;
-            dev.devIP = 0;
             dev.usbDev.dev = usbdev;
             dev.usbDev.inEndPoint = inEndPoint;
             dev.usbDev.outEndPoint = outEndPoint;
@@ -152,6 +161,8 @@ void CDeviceManager::EnumerateDevices()
             devID = devID + 1;
         }
     }
+
+    SearchEthDevices();
 }
 
 void CDeviceManager::SearchEthDevices()
@@ -159,7 +170,60 @@ void CDeviceManager::SearchEthDevices()
     if (NULL == sock)
         return;
 
+    int devID = 10000;
 
+    SOCKADDR_IN addr;
+    memset(&addr, 0, sizeof(addr));
+    addr.sin_family = AF_INET;
+    addr.sin_port = htons(0xFEEF);
+    addr.sin_addr.s_addr = inet_addr("255.255.255.255");
+
+    char cmd[] = { 0xFF, 0xFE, 0, 1, 0xFE, 0xFE, 0xEF, 0xEF };
+    char buf[1600];
+
+    sendto(sock, cmd, sizeof(cmd), 0, (sockaddr*)&addr, sizeof(SOCKADDR_IN));
+   
+    timeval tv;
+    fd_set readfds;
+    while (1)
+    {
+        FD_ZERO(&readfds);
+        FD_SET(sock, &readfds);
+        tv.tv_sec = 1;
+        tv.tv_usec = 0;
+        select(1, &readfds, NULL, NULL, &tv);
+        if (FD_ISSET(sock, &readfds))
+        {
+            SOCKADDR_IN addrfrom;
+            int len = sizeof(SOCKADDR_IN);
+            int n = 0;
+
+            if ((n = recvfrom(sock, buf, 1600, 0, (sockaddr*)&addrfrom, &len)) > 0)
+            {
+                WORD sig = *(WORD*)&buf[0];
+                WORD cmd = *(WORD*)&buf[2];
+                WORD cmd_ = ~(*(WORD*)&buf[4]);
+                if (sig == 0xFFFF &&
+                    cmd == cmd_ &&
+                    cmd == 0xFEFF)
+                {
+                    UFD_DEVINFO dev;
+                    dev.devID = devID;
+                    dev.protType = UFD_ETH;
+
+                    dev.ethDev.addr = addrfrom;
+
+                    CDeviceManager* mgr = new CDeviceManager(dev);
+                    devmgrs[devID] = mgr;
+                }
+            }
+        }
+        else
+        {
+            break;
+        }
+    }
+    
 }
 
 CDeviceManager* CDeviceManager::GetManagerByDeviceID(int devID)
@@ -231,9 +295,28 @@ DWORD CDeviceManager::ReceiveDataProc()
 
         if (len < 10)
         {
-            unsigned short cmd = ((unsigned short*)m_cache)[0];
-            unsigned short cmd_ = ~((unsigned short*)m_cache)[1];
-            unsigned short rsp = ((unsigned short*)m_cache)[2];
+            unsigned short cmd; 
+            unsigned short cmd_; 
+            unsigned short rsp; 
+
+            if (m_device.protType == UFD_USB)
+            {
+                cmd = ((unsigned short*)m_cache)[0];
+                cmd_ = ~((unsigned short*)m_cache)[1];
+                rsp = ((unsigned short*)m_cache)[2];
+            }
+            else
+            {
+                unsigned short sig = ((unsigned short)m_cache[0] << 8) | m_cache[1];
+
+                if (sig != 0xFFFF)
+                    continue;
+
+                cmd = ((unsigned short)m_cache[2] << 8) | m_cache[3];
+                cmd_ = ~(((unsigned short)m_cache[4] << 8) | m_cache[5]);
+                rsp = ((unsigned short)m_cache[6] << 8) | m_cache[7];
+            }
+
 
             if (cmd == cmd_)
             {
@@ -299,7 +382,11 @@ int CDeviceManager::ReceiveDataUSB()
 
 int CDeviceManager::ReceiveDataEth()
 {
-    return 0;
+    SOCKADDR_IN addrfrom;
+    int len = sizeof(SOCKADDR_IN);
+    int n = 0;
+
+    return recvfrom(sock, (char*)m_cache, CACHE_SIZE, 0, (sockaddr*)&addrfrom, &len);
 }
 
 int CDeviceManager::SendCommand(unsigned short cmd, unsigned int param)
@@ -307,10 +394,13 @@ int CDeviceManager::SendCommand(unsigned short cmd, unsigned int param)
     WaitForSingleObject(m_mtxSendCommand, INFINITE);
 
     m_curCmd = cmd;
+    
+    unsigned short cmdusb[] = { cmd, ~cmd, LOWORD(param), HIWORD(param) };
+    unsigned char cmdeth[] = { HIBYTE(cmd), LOBYTE(cmd), ~HIBYTE(cmd), ~LOBYTE(cmd), 
+                                HIBYTE((HIWORD(param))), LOBYTE((HIWORD(param))),
+                                HIBYTE((LOWORD(param))), LOBYTE((LOWORD(param))) };
 
-    unsigned short cmdl[] = { cmd, ~cmd, LOWORD(param), HIWORD(param) };
-
-    int ret = SendData((unsigned char*)cmdl, 8);
+    int ret = SendData(m_device.protType == UFD_USB ? (unsigned char*)cmdusb : cmdeth, 8);
 
     if (ret > 0)
     {
@@ -350,7 +440,7 @@ int CDeviceManager::SendDataUSB(unsigned char* buffer, int len)
 
 int CDeviceManager::SendDataEth(unsigned char* buffer, int len)
 {
-    return 0;
+    return sendto(sock, (char*)buffer, len, 0, (sockaddr*)&m_device.ethDev.addr, sizeof(SOCKADDR_IN));
 }
 
 void CDeviceManager::AddBuffer(unsigned char* buffer, int length)

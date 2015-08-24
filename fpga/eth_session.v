@@ -102,7 +102,6 @@ module eth_session
 		.o_param(o_param),
 		.o_cmd_come(o_cmd_come),
 		.i_cmd_finish(i_cmd_finish),
-		.i_cmd_finish_code(i_cmd_finish_code),
 		
 		.o_eth_txen(o_eth_txen),
 		.o_eth_txd(o_eth_txd),

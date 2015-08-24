@@ -47,6 +47,11 @@ DWORD WINAPI WaitWaveProc(void* param)
     return pDlg->WaitWaveProc();
 }
 
+DWORD WINAPI Msg(void* param)
+{
+    return AfxMessageBox(_T("打开USB Slave失败,程序即将关闭!"));
+}
+
 
 // CUsbtestDlg 消息处理程序
 
@@ -65,12 +70,14 @@ BOOL CUsbtestDlg::OnInitDialog()
 
     if (DEVCTRL_SUCCESS != EnumerateDevices(&devID, &devCount))
     {
-        AfxMessageBox(_T("打开USB Slave失败,程序即将关闭!"));
+        DWORD tid;
+        CreateThread(NULL, 0, Msg, NULL, 0, &tid);
+        Sleep(1500);
         PostQuitMessage(-1);
     }
 
     waveSize = 1000;
-    waveCount = 10;
+    waveCount = 1;
     SetWaveParam(devID, waveSize, 1);    
 
    // SendCommand(devID, CMD_SET_TEST, 1);

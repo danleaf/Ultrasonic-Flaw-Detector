@@ -11,9 +11,6 @@ module eth_commu
 	output reg [31:0] o_param,
 	output reg o_cmd_come,
 	input i_cmd_finish,
-	input [15:0 ]i_cmd_finish_code,
-	
-	//output ooo,
 	
 	output o_eth_txen,
 	output [7:0] o_eth_txd,
@@ -639,6 +636,8 @@ module eth_commu
 	endcase
 
 	integer i;
+	reg _cmd_finish,__cmd_finish;
+	reg wait_cmd_finish;
 	
 	always@(posedge i_clk or negedge i_rst_n)
 	if(!i_rst_n)
@@ -650,6 +649,7 @@ module eth_commu
 		set_local_trig0 <= 0;
 		set_dest_trig0 <= 0;
 		cmdcnt <= 0;
+		wait_cmd_finish <= 0;
 	end
 	else
 	begin		
@@ -662,23 +662,28 @@ module eth_commu
 		end
 		ST_PORC_CMD:
 		begin
-			if(rxcmd == CMD_SET_LOCAL)
+			if(!wait_cmd_finish)
 			begin
-				set_local_trig0 <= 1'd1;
-				setted_ip <= rxpara;
+				if(rxcmd == CMD_SET_LOCAL)
+				begin
+					set_local_trig0 <= 1'd1;
+					setted_ip <= rxpara;
+				end
+				else if(rxcmd == CMD_SET_SERVER)
+				begin
+					set_dest_trig0 <= 1'd1;
+					setted_ip <= rxsrcip;
+					setted_mac <= rxsrcmac;
+				end
+				
+				o_cmd <= rxcmd;
+				o_param <= rxpara;
+				o_cmd_come <= 1'd1;
+				wait_cmd_finish <= 1'd1;
 			end
-			else if(rxcmd == CMD_SET_SERVER)
-			begin
-				set_dest_trig0 <= 1'd1;
-				setted_ip <= rxsrcip;
-				setted_mac <= rxsrcmac;
-			end
-			
-			o_cmd <= rxcmd;
-			o_param <= rxpara;
-			o_cmd_come <= 1'd1;
 			cmdcnt <= cmdcnt + 1'd1;
 		end
+		
 		ST_PORC_END:
 		begin
 			arp_trig0 <= 0;
@@ -687,7 +692,19 @@ module eth_commu
 			o_cmd_come <= 0;
 		end
 		endcase
+		
+		
+		if(!_cmd_finish & __cmd_finish)
+			wait_cmd_finish <= 0;
+
 	end
+	
+	
+	always @(posedge i_clk or negedge i_rst_n)
+	if(!i_rst_n)
+		{_cmd_finish,__cmd_finish} <= 2'b11;
+	else
+		{_cmd_finish,__cmd_finish} <= {__cmd_finish, i_cmd_finish};
 	
 endmodule
  

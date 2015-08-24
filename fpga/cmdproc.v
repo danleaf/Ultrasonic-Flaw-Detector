@@ -76,30 +76,43 @@ module cmdproc
 			case(cmd)
 			CMD_START_RUN:
 				o_run <= 1'd1;
+				
 			CMD_STOP_RUN:
 				o_run <= 0;
+				
 			CMD_SET_TRIG_MODE:
 				o_outmode <= param[0];
+				
 			CMD_SET_TRIG_EDGE:
 				o_outnegedge <= param[0];
+				
 			CMD_SET_WAVE_SIZE:
 				{o_waveRate,o_waveRawSize} <= param[18:0];
+				
 			CMD_SET_TRIG_FREQU:
 			begin
 				if(|param[31:16])
 					o_pulse <= param[31:16] / 10;
 				o_cycle <= 100000000	/ param[15:0];	
 			end
+			
 			CMD_SET_OUTTRIG_DELAY:
 				o_outdelay <= param[15:0];
+				
 			CMD_SET_TRIGWAVE_DELAY:
 				o_wavedelay <= param[15:0];
+				
 			CMD_SET_GAIN:
 				o_gaindata <= param[7:0];
+				
 			CMD_SET_TEST:
 				o_test <= param[0];
+				
 			CMD_SET_SERVER:
 				o_finish_code <= (GLOBAL_IDENT == param) ? 0 : ERR_IDENT_ERROR;
+				
+			default:
+				o_finish_code <= 16'hFFFF;
 			endcase
 		end
 			

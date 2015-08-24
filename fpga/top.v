@@ -85,7 +85,7 @@ module top
 	triger trig_inst(
 		.i_clk100M(clk_100K), 
 		.rst_n(i_rst_n), 
-		.en(/*run &*/ !outmode),
+		.en(run & !outmode),
 		.cycle(20'd200000),	
 		.q(intrig)
 	);	
@@ -118,7 +118,7 @@ module top
 		 .i_ad_clk(clk_ad_180M),
 		 .i_rd_clk(eth_gtxclk),
 		 .i_rst_n(i_rst_n),
-		 .i_ad_data(/*test*/1'd1 ? ii_ad_data : i_ad_data), 
+		 .i_ad_data(test ? ii_ad_data : i_ad_data), 
 		 .o_dual_data(ad_dual_data),
 		 .i_st(intrig),
 		 .i_isout(outmode),

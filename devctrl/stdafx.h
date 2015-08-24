@@ -12,8 +12,6 @@
 
 
 // TODO:  在此处引用程序需要的其他头文件
-#include "../ipscantypes.h"
-#include "types.h"
 #include <map>
 #include <list>
 #include <string.h>
@@ -21,5 +19,7 @@
 #include <winioctl.h>
 #include <assert.h>
 #include <WinSock2.h>
+#include "../ipscantypes.h"
+#include "types.h"
 
 using namespace std;
