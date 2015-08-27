@@ -24,9 +24,6 @@
     <None Include="ad_wrapper.v">
       <Filter>源文件</Filter>
     </None>
-    <None Include="ADC.v">
-      <Filter>源文件</Filter>
-    </None>
     <None Include="add.v">
       <Filter>源文件</Filter>
     </None>
@@ -79,9 +76,6 @@
       <Filter>源文件</Filter>
     </None>
     <None Include="NUMSHOW.v">
-      <Filter>源文件</Filter>
-    </None>
-    <None Include="packet.v">
       <Filter>源文件</Filter>
     </None>
     <None Include="pll100m.v">
@@ -175,9 +169,6 @@
       <Filter>资源文件</Filter>
     </None>
     <None Include="cmdproc.v">
-      <Filter>源文件</Filter>
-    </None>
-    <None Include="gain.v">
       <Filter>源文件</Filter>
     </None>
     <None Include="outtriger.v">

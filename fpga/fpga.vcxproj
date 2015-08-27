@@ -66,7 +66,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <None Include="88e1111.csv" />
-    <None Include="ADC.v" />
     <None Include="add.v" />
     <None Include="adusb.csv" />
     <None Include="adusb.stp" />
@@ -86,14 +85,12 @@
     <None Include="eth_commu.v" />
     <None Include="eth_session.v" />
     <None Include="fifo.v" />
-    <None Include="gain.v" />
     <None Include="inc.v" />
     <None Include="indififo.v" />
     <None Include="ip.v" />
     <None Include="mac.v" />
     <None Include="NUMSHOW.v" />
     <None Include="outtriger.v" />
-    <None Include="packet.v" />
     <None Include="phy_reset.v" />
     <None Include="pins.csv" />
     <None Include="pins2.csv" />
