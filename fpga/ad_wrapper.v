@@ -8,7 +8,8 @@ module ad_wrapper
 	 input [15:0] i_recv_count,
     input [AD_DATA_SIZE-1:0] i_ad_data,
     output [AD_DATA_SIZE*2-1:0] o_dual_data,
-	 output o_rd_empty,o_working,
+	 output o_rd_empty,
+	 output reg o_reading,		//从触发开始到一个波形读取完毕之间一直为1，其余为0
 	 output reg o_ad_open
 );	
 	localparam OUT_DATA_SIZE = AD_DATA_SIZE*2;
@@ -22,7 +23,6 @@ module ad_wrapper
 	reg st0,st1,st,working0;
 	
 	assign start = i_isout ? i_stout : i_st;
-	assign o_working = working;
 	
 	initial
 	begin
@@ -68,5 +68,31 @@ module ad_wrapper
     .i_wr_data(buffer),   
     .o_rd_data(o_dual_data),
 	 .o_empty(o_rd_empty));
+	 
+	
+	reg stt,_stt;
+	reg [15:0] rdcnt;
+	always@(posedge i_rd_clk or negedge i_rst_n)
+	if(!i_rst_n)
+	begin
+		o_reading <= 0;
+		rdcnt <= 0;
+		stt <= 1'd1;
+		_stt <= 1'd1;
+	end
+	else
+	begin
+		{stt,_stt} <= {_stt, start};
+		if(!o_reading & !stt & _stt)
+		begin
+			o_reading <= 1'd1;
+			rdcnt <= 0;
+		end
+		else if(o_reading & !o_rd_empty)
+			rdcnt <= rdcnt + 2'd2;			//每周期读2个字节
+			
+		if(o_reading & rdcnt == i_recv_count)
+			o_reading <= 0;
+	end
 
 endmodule 

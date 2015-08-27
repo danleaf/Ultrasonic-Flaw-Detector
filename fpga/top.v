@@ -20,25 +20,9 @@ module top
 	wire eth_gtxclk;
 	wire clk_ad_180M = i_clk50M;
 	wire clk_sys_100M = i_clk50M;
-	reg clk_100K;
 	
 	pll125m  plleth(i_clk50M, o_eth_gtxclk, eth_gtxclk);
 	
-	reg [8:0] cnt100K;
-	always@(posedge i_clk50M or negedge i_rst_n)
-	if(!i_rst_n)
-	begin
-		clk_100K <= 1'd1;
-		cnt100K <= 0;
-	end
-	else
-	begin
-		cnt100K <= (cnt100K == 9'd499) ? 0 :cnt100K + 1'd1;
-		if(cnt100K == 0)
-			clk_100K <= 1'd0;
-		if(cnt100K == 9'd250)
-			clk_100K <= 1'd1;
-	end	
 	
 	phy_reset phyrst(
 	.clk(eth_gtxclk),
@@ -83,10 +67,10 @@ module top
 	
 	
 	triger trig_inst(
-		.i_clk100M(clk_100K), 
+		.i_clk100M(i_clk50M), 
 		.rst_n(i_rst_n), 
 		.en(run & !outmode),
-		.cycle(20'd200000),	
+		.cycle(20'd50000),	
 		.q(intrig)
 	);	
 	
@@ -111,7 +95,7 @@ module top
 	reg [7:0] ii_ad_data;
 	wire [15:0] ad_dual_data;
 	wire ad_rd_empty;
-	wire working;
+	wire reading;
 	
 	
 	ad_wrapper ad_wrapper_inst (
@@ -126,39 +110,14 @@ module top
 		 .o_rd_empty(ad_rd_empty),
 		 .o_ad_open(),
 		 .i_recv_count(waveRawSize),
-		 .o_working(working)
+		 .o_reading(reading)
 	);
-	
-	reg ethwr,st,_st;
-	reg [15:0] ethwrcnt;
-	always@(posedge eth_gtxclk or negedge i_rst_n)
-	if(!i_rst_n)
-	begin
-		ethwr <= 0;
-		ethwrcnt <= 0;
-		st <= 1'd1;
-		_st <= 1'd1;
-	end
-	else
-	begin
-		{st,_st} <= {_st,outmode?outtrig:intrig};
-		if(!ethwr & !st & _st)
-		begin
-			ethwr <= 1'd1;
-			ethwrcnt <= 0;
-		end
-		else if(ethwr & !ad_rd_empty)
-			ethwrcnt <= ethwrcnt + 2'd2;
-			
-		if(ethwr & ethwrcnt == waveRawSize)
-			ethwr <= 0;
-	end
 	
 	eth_session i(
 		.i_clk(eth_gtxclk),
 		.i_rst_n(i_rst_n),
 		.i_data(ad_dual_data[7:0]),
-		.i_wr(ethwr),
+		.i_wr(reading),
 		.i_din(!ad_rd_empty),
 		.o_full(),
 		.o_cmd_come(cmd_come),

@@ -23,7 +23,8 @@ module sdramfifo
 	output o_sdram_cs
 	//,output [7:0] state1,state2,
 	//output [RAM_ADDR_SIZE-1:0] waddr,raddr
-);	//initialize: power on (200us)-> pre charge -> 8 times refresh -> set register -> initial OK
+);	
+	//initialize: power on (200us)-> pre charge -> 8 times refresh -> set register -> initial OK
 
 	localparam BURST_WIDTH = 3;
 	localparam BURST_SIZE = 4'd8;

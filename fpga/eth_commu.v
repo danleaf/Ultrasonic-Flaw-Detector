@@ -41,7 +41,7 @@ module eth_commu
 	localparam ETHARP_SENDERIP_OFFSET = 6'd28;
 	localparam ETHARP_TARGETMAC_OFFSET = 6'd32;
 	localparam ETHARP_TARGETIP_OFFSET = 6'd38;
-	localparam ETHARP_HEAD_LENGTH = 6'd42;
+	localparam ETHARP_HEAD_LENGTH = 6'd42 + 6'd18;		//ETH头 + ARP头 = 42, 以太包最小64，64-42=22，22-4字节CRC=18
 	localparam ETH_HEAD_LENGTH = 5'd14;
 	localparam IP_HEAD_LENGTH = 5'd20;
 	localparam UDP_HEAD_LENGTH = 5'd8;
@@ -62,7 +62,7 @@ module eth_commu
 	reg [7:0] udp_hdr [0:7];
 	reg [7:0] ip_hdr [0:19];
 	reg [7:0] eth_hdr [0:13];
-	reg [7:0] etharp_hdr [0:41];
+	reg [7:0] etharp_hdr [0:ETHARP_HEAD_LENGTH-1];
 	reg data_send_trig,data_send_req,send_over;
 	reg [31:0] setted_ip;
 	reg [47:0] setted_mac;
@@ -75,6 +75,7 @@ module eth_commu
 	reg [31:0] ip_ip;
 	reg [47:0] eth_mac;
 	reg set_local_sig,set_dest_sig;
+	reg [10:0] pdu_length;
 	
 	reg [9:0] txstate,txstate_next;
 	reg arp_send_req,arp_trig,arp_trig0;
@@ -95,7 +96,7 @@ module eth_commu
 	wire [5:0] etharp_idx;
 	wire [7:0] udph_byte,iph_byte,eth_byte,etharp_byte;
 	wire wr_udph_en,wr_iph_en,wr_eth_en,wr_etharp_en;
-	wire [31:0] localip;
+	(*keep*) wire [31:0] localip;
 	
 	reg [5:0] arp_send_idx;
 	
@@ -104,7 +105,7 @@ module eth_commu
 		.i_clk(i_clk),
 		.i_rst_n(i_rst_n),
 		.i_trig(txstate == ST_PREP_UDP),
-		.i_data_length(i_data_length + 2'd2),		//2 byte of packet_id
+		.i_data_length(i_data_length/* + 2'd2*/),		//2 byte of packet_id
 		.o_udph_idx(udph_idx),
 		.o_udph_byte(udph_byte),
 		.o_wr_udph_en(wr_udph_en),
@@ -380,12 +381,15 @@ module eth_commu
 			eth_mac <= setted_mac;
 			arp_send_idx <= 0;
 		end
+		ST_PREP_UDP:
+			pdu_length <= i_data_length < 11'd18 ? 11'd18 : i_data_length;   //ETH包最小64字节，则udp的内容最小18字节
+			
 		ST_SEND_DATA:
 		begin
 			if(mac_send_ok)
 				send_over <= 1'd1;
 				
-			if(pdu_send_cnt_inc == i_data_length)
+			if(pdu_send_cnt_inc == pdu_length)
 				mac_last_data <= 1'd1;
 			else
 				mac_last_data <= 0;				
@@ -420,13 +424,14 @@ module eth_commu
 				begin
 					send_hdr_cnt <= 0;
 					send_hdr_sig[2] <= 1'd1;
+					o_feed_next_byte <= 1'd1;
 				end
 				else
 					send_hdr_cnt <= send_hdr_cnt + 1'd1;
 				
 				mac_tx_data <= udp_hdr[send_hdr_cnt];
 			end
-			else if(!send_hdr_sig[3])
+			/*else if(!send_hdr_sig[3])      //填充2字节的标识
 			begin
 				if(send_hdr_cnt == 1'd1)
 				begin
@@ -438,13 +443,17 @@ module eth_commu
 					send_hdr_cnt <= send_hdr_cnt + 1'd1;
 				
 				mac_tx_data <= (send_hdr_cnt == 0 ? i_pck_ident : i_pck_idx);
-			end
+			end*/
 			else if(!send_data_sig)
 			begin
 				if(pdu_send_cnt_inc == i_data_length)
 				begin
-					send_data_sig <= 1'd1;
 					o_feed_next_byte <= 0;
+				end
+				
+				if(pdu_send_cnt_inc == pdu_length)
+				begin
+					send_data_sig <= 1'd1;
 				end
 				else
 					pdu_send_cnt_inc <= pdu_send_cnt_inc + 1'd1;
@@ -562,7 +571,7 @@ module eth_commu
 	localparam ST_PORC_CMD = 8'd16;
 	localparam ST_PORC_END = 8'd32;
 	
-	wire [7:0] layer3protL = cur_rx_data[ETH_PROT_OFFSET+1];
+	(*keep*) wire [7:0] layer3protL = cur_rx_data[ETH_PROT_OFFSET+1];
 	wire rx_check_ok = ({cur_rx_data[HEAD_SIZE],cur_rx_data[HEAD_SIZE+1]} == ~{cur_rx_data[HEAD_SIZE+2],cur_rx_data[HEAD_SIZE+3]});
 	wire [15:0] rxcmd = {cur_rx_data[HEAD_SIZE],cur_rx_data[HEAD_SIZE+1]};
 	wire [31:0] rxpara = {cur_rx_data[HEAD_SIZE+4],cur_rx_data[HEAD_SIZE+5],cur_rx_data[HEAD_SIZE+6],cur_rx_data[HEAD_SIZE+7]};
@@ -574,9 +583,9 @@ module eth_commu
 							cur_rx_data[ETH_SIZE+IP_SRCIP_OFFSET+2],cur_rx_data[ETH_SIZE+IP_SRCIP_OFFSET+3]};
 	wire [31:0] rxarpsrcip = {cur_rx_data[28],cur_rx_data[29],cur_rx_data[30],cur_rx_data[31]};
 	wire [31:0] rxarpdstip = {cur_rx_data[38],cur_rx_data[39],cur_rx_data[40],cur_rx_data[41]};
-	wire rx_mac_ok = (rxdstmac == LOCAL_MAC) | &rxdstmac;
+	(*keep*) wire rx_mac_ok = (rxdstmac == LOCAL_MAC) | &rxdstmac;
 	
-	reg [7:0] rxstate,rxstate_next;	
+	(*noprune*) reg [7:0] rxstate,rxstate_next;	
 	reg _store_finish,__store_finish;
 	
 	//reg rrx_mac_ok;

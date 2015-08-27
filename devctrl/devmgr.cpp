@@ -200,12 +200,12 @@ void CDeviceManager::SearchEthDevices()
 
             if ((n = recvfrom(sock, buf, 1600, 0, (sockaddr*)&addrfrom, &len)) > 0)
             {
-                WORD sig = *(WORD*)&buf[0];
-                WORD cmd = *(WORD*)&buf[2];
-                WORD cmd_ = ~(*(WORD*)&buf[4]);
-                if (sig == 0xFFFF &&
-                    cmd == cmd_ &&
-                    cmd == 0xFEFF)
+                WORD cmd = *(WORD*)&buf[0];
+                WORD cmd_ = ~(*(WORD*)&buf[2]);
+                WORD rsp = (*(WORD*)&buf[4]);
+                if (cmd == cmd_ &&
+                    cmd == 0xFEFF &&
+                    rsp == 0)
                 {
                     UFD_DEVINFO dev;
                     dev.devID = devID;
@@ -288,12 +288,7 @@ DWORD CDeviceManager::ReceiveDataProc()
         else
             len = ReceiveDataEth();
 
-        if (len < 6)
-        {
-            continue;
-        }
-
-        if (len < 10)
+        if (len == 6)
         {
             unsigned short cmd; 
             unsigned short cmd_; 
@@ -307,14 +302,9 @@ DWORD CDeviceManager::ReceiveDataProc()
             }
             else
             {
-                unsigned short sig = ((unsigned short)m_cache[0] << 8) | m_cache[1];
-
-                if (sig != 0xFFFF)
-                    continue;
-
-                cmd = ((unsigned short)m_cache[2] << 8) | m_cache[3];
-                cmd_ = ~(((unsigned short)m_cache[4] << 8) | m_cache[5]);
-                rsp = ((unsigned short)m_cache[6] << 8) | m_cache[7];
+                cmd = ((unsigned short)m_cache[0] << 8) | m_cache[1];
+                cmd_ = ~(((unsigned short)m_cache[2] << 8) | m_cache[3]);
+                rsp = ((unsigned short)m_cache[4] << 8) | m_cache[5];
             }
 
 
@@ -325,15 +315,15 @@ DWORD CDeviceManager::ReceiveDataProc()
                     m_curCmdRsp = rsp;
                     SetEvent(m_evtCommandRsp);
                 }
+                continue;
             }
 
-            continue;
         }
 
         if (NULL != (buffer = GetUsedBuffer()))
-        //if (m_waveSize==len)
         {
             int cacheleft = len;
+            unsigned char* src = m_cache;
 
             while (true)
             {
@@ -341,12 +331,13 @@ DWORD CDeviceManager::ReceiveDataProc()
                 int cpylen = cacheleft > bufleft ? bufleft : cacheleft;
                 unsigned char* start = &buffer->buffer[buffer->current];
 
-                memcpy(start, m_cache, cpylen);
+                memcpy(start, src, cpylen);
                 cacheleft -= cpylen;
                 buffer->current += cpylen;
 
                 if (cacheleft > 0)
                 {
+                    src += cpylen;
                     buffer = PostBuffer();
                     if (!buffer)
                         break;
@@ -404,7 +395,7 @@ int CDeviceManager::SendCommand(unsigned short cmd, unsigned int param)
 
     if (ret > 0)
     {
-        DWORD rsp = WaitForSingleObject(m_evtCommandRsp, 1000);
+        DWORD rsp = WaitForSingleObject(m_evtCommandRsp, 2000);
         if (WAIT_TIMEOUT == rsp)
             ret = ApiWaitDeviceRspTimeOut;
         else

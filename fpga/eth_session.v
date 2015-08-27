@@ -16,7 +16,7 @@ module eth_session
 	input i_eth_rxdv,
 	input [7:0] i_eth_rxd
 );
-	localparam PDU_SIZE = 11'd1470; //1500 - 20 - 8 - 2;
+	localparam PDU_SIZE = 11'd1472; //1500 - 20 - 8;
 	localparam ADDR_WIDTH = 13;
 	localparam FRAME_COUNT_WIDTH = 4;
 	localparam MEMSIZE = 1<<ADDR_WIDTH;
@@ -152,7 +152,7 @@ module eth_session
 				wr_idx <= wr_idx + 1'b1;
 				pdu_length[wr_idx[1:0]] <= wr_size;
 				packet_id[wr_idx[1:0]] <= {packet_ident,packet_idx};
-				packet_ident <= packet_ident + 1'd1;
+				//packet_ident <= packet_ident + 1'd1;
 				packet_idx <= 0;
 				full <= (wr_idx + 1'b1 == {{~rd_idx[2],rd_idx[1:0]}});
 			end
